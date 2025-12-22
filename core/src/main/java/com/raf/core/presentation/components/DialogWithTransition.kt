@@ -216,7 +216,7 @@ fun SharedTransitionScope.DialogWithTransition(
                                         .padding(vertical = 4.dp, horizontal = 8.dp)
                                 ) {
                                     TextButton(
-                                        shapes = CustomButtonShapes(),
+                                        shapes = customButtonShapes(),
                                         onClick = onDismiss,
                                     ) {
                                         Text(
@@ -225,7 +225,7 @@ fun SharedTransitionScope.DialogWithTransition(
                                     }
                                     if (onConfirmation != null) {
                                         TextButton(
-                                            shapes = CustomButtonShapes(),
+                                            shapes = customButtonShapes(),
                                             onClick = onConfirmation,
                                         ) {
                                             Text(

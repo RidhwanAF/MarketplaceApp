@@ -1,45 +1,43 @@
 package com.raf.marketplace.presentation.list
 
-import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.calculateEndPadding
+import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
 import androidx.compose.foundation.lazy.staggeredgrid.items
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.PlainTooltip
+import androidx.compose.material3.FloatingToolbarDefaults
+import androidx.compose.material3.FloatingToolbarExitDirection.Companion.Bottom
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
-import androidx.compose.material3.TooltipAnchorPosition
-import androidx.compose.material3.TooltipBox
-import androidx.compose.material3.TooltipDefaults
-import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.material3.rememberTooltipState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.raf.core.presentation.components.CustomIconButtonShapes
 import com.raf.marketplace.R
+import com.raf.marketplace.presentation.list.components.ProductCategory
+import com.raf.marketplace.presentation.list.components.ProductFilterToolbar
 import com.raf.marketplace.presentation.list.components.ProductItem
 import com.raf.marketplace.presentation.list.components.ProductItemLoading
+import com.raf.marketplace.presentation.list.components.ProductListTopAppBar
 import com.raf.marketplace.presentation.list.viewmodel.HomeViewModel
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
@@ -49,10 +47,14 @@ fun SharedTransitionScope.HomeScreen(
     isSettingsScreenVisible: Boolean = false,
     onNavigateToSettings: () -> Unit = {},
 ) {
+    val localLayoutDirection = LocalLayoutDirection.current
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
+    val floatingActionToolbarScrollBehavior =
+        FloatingToolbarDefaults.exitAlwaysScrollBehavior(Bottom)
     val snackbarHostState = remember { SnackbarHostState() }
 
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val productFilterState by viewModel.productFilterState.collectAsStateWithLifecycle()
 
     // Error Message
     LaunchedEffect(uiState.errorMessage) {
@@ -66,51 +68,20 @@ fun SharedTransitionScope.HomeScreen(
     ) {
         Scaffold(
             topBar = {
-                TopAppBar(
-                    title = {
-                        Text(
-                            text = stringResource(R.string.choose_your_best_product),
-                            style = MaterialTheme.typography.titleLarge,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis
-                        )
-                    },
-                    actions = {
-                        AnimatedContent(
-                            targetState = !isSettingsScreenVisible,
-                        ) { targetState ->
-                            if (targetState) {
-                                TooltipBox(
-                                    positionProvider =
-                                        TooltipDefaults.rememberTooltipPositionProvider(
-                                            TooltipAnchorPosition.Below
-                                        ),
-                                    tooltip = {
-                                        PlainTooltip {
-                                            Text(text = stringResource(R.string.settings))
-                                        }
-                                    },
-                                    state = rememberTooltipState(),
-                                    modifier = Modifier
-                                        .sharedBounds(
-                                            sharedContentState = rememberSharedContentState("transition_settings_screen_container_key"),
-                                            animatedVisibilityScope = this
-                                        )
-                                ) {
-                                    IconButton(
-                                        shapes = CustomIconButtonShapes(),
-                                        onClick = onNavigateToSettings
-                                    ) {
-                                        Icon(
-                                            imageVector = Icons.Default.Settings,
-                                            contentDescription = stringResource(R.string.settings)
-                                        )
-                                    }
-                                }
-                            }
-                        }
-                    },
-                    scrollBehavior = scrollBehavior
+                ProductListTopAppBar(
+                    scrollBehavior = scrollBehavior,
+                    searchQuery = productFilterState.query,
+                    onSearchQueryChange = viewModel::onSearchQueryChange,
+                    isSettingsButtonVisible = !isSettingsScreenVisible,
+                    onNavigateToSettings = onNavigateToSettings
+                )
+            },
+            floatingActionButton = {
+                ProductFilterToolbar(
+                    scrollBehavior = floatingActionToolbarScrollBehavior,
+                    selectedSortTypes = productFilterState.productSortTypes,
+                    onClicked = viewModel::onProductFilterByChange,
+                    onShortByChanged = viewModel::onProductSortByChange
                 )
             },
             snackbarHost = {
@@ -119,29 +90,61 @@ fun SharedTransitionScope.HomeScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .nestedScroll(scrollBehavior.nestedScrollConnection)
+                .nestedScroll(floatingActionToolbarScrollBehavior)
         ) { innerPadding ->
-            LazyVerticalStaggeredGrid(
-                columns = StaggeredGridCells.Adaptive(175.dp),
-                contentPadding = innerPadding,
-                modifier = Modifier.fillMaxSize()
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
             ) {
-                if (uiState.isLoading && uiState.products.isEmpty()) {
-                    items(10) {
-                        ProductItemLoading()
+                ProductCategory(
+                    categories = uiState.categories,
+                    selectedCategories = productFilterState.categories,
+                    onCLicked = viewModel::onCategoryChange,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = innerPadding.calculateTopPadding())
+                )
+                LazyVerticalStaggeredGrid(
+                    columns = StaggeredGridCells.Adaptive(175.dp),
+                    contentPadding = PaddingValues(
+                        bottom = innerPadding.calculateBottomPadding() + 16.dp,
+                        start = innerPadding.calculateStartPadding(localLayoutDirection) + 2.dp,
+                        end = innerPadding.calculateEndPadding(localLayoutDirection) + 2.dp,
+                    ),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(1f)
+                ) {
+                    if (uiState.isLoading && uiState.products.isEmpty()) {
+                        items(10) {
+                            ProductItemLoading()
+                        }
+                        return@LazyVerticalStaggeredGrid
                     }
-                    return@LazyVerticalStaggeredGrid
-                }
-                items(
-                    items = uiState.products,
-                    key = { product -> product.id }
-                ) { product ->
-                    ProductItem(
-                        product = product,
-                        onClicked = {
 
-                        },
-                        modifier = Modifier.animateItem()
-                    )
+                    if (uiState.products.isEmpty()) {
+                        item {
+                            Text(
+                                text = stringResource(R.string.no_products_found),
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                            )
+                        }
+                        return@LazyVerticalStaggeredGrid
+                    }
+
+                    items(
+                        items = uiState.products,
+                        key = { product -> product.id }
+                    ) { product ->
+                        ProductItem(
+                            product = product,
+                            onClicked = {
+
+                            },
+                            modifier = Modifier.animateItem()
+                        )
+                    }
                 }
             }
         }

@@ -9,21 +9,21 @@ import androidx.compose.runtime.Composable
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
-fun CustomButtonShapes() = ButtonShapes(
+fun customButtonShapes() = ButtonShapes(
     shape = MaterialTheme.shapes.extraLarge,
     pressedShape = MaterialTheme.shapes.medium
 )
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
-fun CustomIconButtonShapes() = IconButtonShapes(
+fun customIconButtonShapes() = IconButtonShapes(
     shape = MaterialTheme.shapes.extraLarge,
     pressedShape = MaterialTheme.shapes.medium
 )
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
-fun CustomIconToggleButtonShapes() = IconToggleButtonShapes(
+fun customIconToggleButtonShapes() = IconToggleButtonShapes(
     shape = MaterialTheme.shapes.extraLarge,
     pressedShape = MaterialTheme.shapes.medium,
     checkedShape = MaterialTheme.shapes.medium

@@ -7,6 +7,7 @@ import com.raf.marketplace.data.remote.MarketplaceApiService
 import com.raf.marketplace.data.repository.MarketplaceRepositoryImpl
 import com.raf.marketplace.domain.repository.MarketplaceRepository
 import com.raf.marketplace.domain.usecase.FetchProductsUseCase
+import com.raf.marketplace.domain.usecase.GetProductCategoriesUseCase
 import com.raf.marketplace.domain.usecase.GetProductsUseCase
 import dagger.Module
 import dagger.Provides
@@ -58,6 +59,12 @@ object MarketPlaceModule {
     @Singleton
     fun provideGetProductsUseCase(marketplaceRepository: MarketplaceRepository): GetProductsUseCase {
         return GetProductsUseCase(marketplaceRepository)
+    }
+
+    @Provides
+    @Singleton
+    fun provideGetProductCategoriesUseCase(marketplaceRepository: MarketplaceRepository): GetProductCategoriesUseCase {
+        return GetProductCategoriesUseCase(marketplaceRepository)
     }
 
 }

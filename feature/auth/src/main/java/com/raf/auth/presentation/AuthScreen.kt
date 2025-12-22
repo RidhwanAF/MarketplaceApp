@@ -78,8 +78,8 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.raf.auth.R
 import com.raf.auth.presentation.components.AuthTabMenuView
 import com.raf.auth.presentation.viewmodel.AuthViewModel
-import com.raf.core.presentation.components.CustomButtonShapes
-import com.raf.core.presentation.components.CustomIconButtonShapes
+import com.raf.core.presentation.components.customButtonShapes
+import com.raf.core.presentation.components.customIconButtonShapes
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
@@ -153,7 +153,7 @@ fun SharedTransitionScope.AuthScreen(
                                     )
                             ) {
                                 IconButton(
-                                    shapes = CustomIconButtonShapes(),
+                                    shapes = customIconButtonShapes(),
                                     onClick = onNavigateToSettings
                                 ) {
                                     Icon(
@@ -417,7 +417,7 @@ fun SharedTransitionScope.AuthScreen(
                     )
                 }
                 Button(
-                    shapes = CustomButtonShapes(),
+                    shapes = customButtonShapes(),
                     enabled = if (uiState.isLoginState) {
                         !uiState.isLoading
                     } else {
@@ -466,7 +466,7 @@ fun SharedTransitionScope.AuthScreen(
                         .animateContentSize()
                 ) {
                     TextButton(
-                        shapes = CustomButtonShapes(),
+                        shapes = customButtonShapes(),
                         onClick = {
                             viewModel.randomUserLogin()
                             localHapticFeedback.performHapticFeedback(HapticFeedbackType.ContextClick)

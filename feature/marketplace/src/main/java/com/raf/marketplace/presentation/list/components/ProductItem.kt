@@ -39,7 +39,7 @@ fun ProductItem(
             onClicked()
         },
         modifier = modifier
-            .padding(8.dp)
+            .padding(2.dp)
     ) {
         Column(
             verticalArrangement = Arrangement.spacedBy(8.dp),

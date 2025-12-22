@@ -40,7 +40,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.raf.core.presentation.components.CustomIconButtonShapes
+import com.raf.core.presentation.components.customIconButtonShapes
 import com.raf.settings.R
 import com.raf.settings.presentation.components.SettingsItemActionWithTransition
 import com.raf.settings.presentation.components.SettingsItemView
@@ -91,7 +91,7 @@ fun SharedTransitionScope.SettingsScreen(
                         state = rememberTooltipState(),
                     ) {
                         IconButton(
-                            shapes = CustomIconButtonShapes(),
+                            shapes = customIconButtonShapes(),
                             onClick = onBack
                         ) {
                             Icon(

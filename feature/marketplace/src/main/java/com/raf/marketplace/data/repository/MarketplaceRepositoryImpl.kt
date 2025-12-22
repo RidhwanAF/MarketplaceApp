@@ -8,7 +8,9 @@ import com.raf.marketplace.data.local.room.MarketplaceDatabase
 import com.raf.marketplace.data.remote.MarketplaceApiService
 import com.raf.marketplace.data.repository.mapper.ProductMapper.toDatabase
 import com.raf.marketplace.data.repository.mapper.ProductMapper.toDomain
+import com.raf.marketplace.data.utility.ProductQueryHelper
 import com.raf.marketplace.domain.model.Product
+import com.raf.marketplace.domain.model.ProductFilter
 import com.raf.marketplace.domain.repository.MarketplaceRepository
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.Flow
@@ -50,9 +52,18 @@ class MarketplaceRepositoryImpl @Inject constructor(
         }
     }
 
-    override fun getProducts(): Flow<List<Product>> {
+    override fun getProducts(productFilter: ProductFilter?): Flow<List<Product>> {
         return try {
-            productDao.getProducts().map { productsEntity ->
+            Log.d(TAG, "getProducts: $productFilter")
+            val filter = productFilter ?: ProductFilter()
+
+            val simpleSQLiteQuery = ProductQueryHelper.createFilteredQuery(
+                query = filter.query,
+                categories = filter.categories,
+                sortTypes = filter.productSortTypes
+            )
+
+            productDao.getProductsFiltered(simpleSQLiteQuery).map { productsEntity ->
                 productsEntity.map { productEntity ->
                     productEntity.toDomain()
                 }
@@ -61,6 +72,10 @@ class MarketplaceRepositoryImpl @Inject constructor(
             Log.e(TAG, "Failed to get products", e)
             flowOf(emptyList())
         }
+    }
+
+    override fun getProductCategories(): Flow<List<String>> {
+        return productDao.getCategories()
     }
 
     private companion object {

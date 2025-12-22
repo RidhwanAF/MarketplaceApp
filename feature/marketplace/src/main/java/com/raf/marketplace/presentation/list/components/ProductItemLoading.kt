@@ -18,7 +18,7 @@ fun ProductItemLoading(modifier: Modifier = Modifier) {
         modifier = modifier
             .fillMaxWidth()
             .height(randomHeight.dp)
-            .padding(8.dp)
+            .padding(4.dp)
             .clip(MaterialTheme.shapes.large)
             .shimmerLoading()
     )
