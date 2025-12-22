@@ -7,9 +7,10 @@ import com.raf.core.domain.contract.AuthProvider
 import com.raf.core.domain.model.ApiResult
 import com.raf.marketplace.domain.model.ProductFilter
 import com.raf.marketplace.domain.model.ProductSortType
-import com.raf.marketplace.domain.usecase.FetchProductsUseCase
-import com.raf.marketplace.domain.usecase.GetProductCategoriesUseCase
-import com.raf.marketplace.domain.usecase.GetProductsUseCase
+import com.raf.marketplace.domain.usecase.cart.GetItemCountFromCartUseCase
+import com.raf.marketplace.domain.usecase.product.FetchProductsUseCase
+import com.raf.marketplace.domain.usecase.product.GetProductCategoriesUseCase
+import com.raf.marketplace.domain.usecase.product.GetProductsUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.delay
@@ -28,6 +29,7 @@ class HomeViewModel @Inject constructor(
     private val fetchProductsUseCase: FetchProductsUseCase,
     private val getProductsUseCase: GetProductsUseCase,
     private val getProductCategoriesUseCase: GetProductCategoriesUseCase,
+    private val getItemCountFromCartUseCase: GetItemCountFromCartUseCase,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(HomeUiState())
@@ -40,6 +42,17 @@ class HomeViewModel @Inject constructor(
         fetchProducts()
         getProducts()
         getProductCategories()
+        getCartItemCount()
+    }
+
+    private fun getCartItemCount() {
+        viewModelScope.launch {
+            getItemCountFromCartUseCase().collect {
+                _uiState.update { state ->
+                    state.copy(cartItemCount = it)
+                }
+            }
+        }
     }
 
     private fun fetchProducts() {

@@ -6,5 +6,7 @@ data class DetailUiState(
     val isLoading: Boolean = false,
     val product: Product? = null,
     val uiMessage: String? = null,
-    val showFullDesc: Boolean = false
+    val showFullDesc: Boolean = false,
+    val quantity: Int = 1,
+    val cartItemCount: Int = 0
 )

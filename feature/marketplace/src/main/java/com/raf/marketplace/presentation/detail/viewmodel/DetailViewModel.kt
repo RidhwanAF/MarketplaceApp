@@ -5,11 +5,15 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.raf.core.domain.contract.AuthProvider
 import com.raf.core.domain.model.ApiResult
-import com.raf.marketplace.domain.usecase.FetchProductByIdUseCase
+import com.raf.marketplace.domain.model.Cart
+import com.raf.marketplace.domain.usecase.cart.AddToCartUseCase
+import com.raf.marketplace.domain.usecase.cart.GetItemCountFromCartUseCase
+import com.raf.marketplace.domain.usecase.product.FetchProductByIdUseCase
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -22,6 +26,8 @@ class DetailViewModel @AssistedInject constructor(
     @Assisted val productId: Int,
     private val authProvider: AuthProvider,
     private val fetchProductByIdUseCase: FetchProductByIdUseCase,
+    private val getItemCountFromCartUseCase: GetItemCountFromCartUseCase,
+    private val addToCartUseCase: AddToCartUseCase,
 ) : ViewModel() {
 
     @AssistedFactory
@@ -34,6 +40,7 @@ class DetailViewModel @AssistedInject constructor(
 
     init {
         getProductDetailById()
+        getCartItemCount()
     }
 
     private fun getProductDetailById() {
@@ -65,9 +72,43 @@ class DetailViewModel @AssistedInject constructor(
         _uiState.update { it.copy(showFullDesc = !it.showFullDesc) }
     }
 
-    private fun showUiMessage(message: String) {
-        if (message.isEmpty()) return
+    fun sumOrSubtractQuantity(isAdd: Boolean) {
+        _uiState.update {
+            it.copy(quantity = (it.quantity + if (isAdd) 1 else -1).coerceAtLeast(0))
+        }
+    }
+
+    fun addToCart() {
         viewModelScope.launch {
+            val cart = Cart(
+                productId = productId,
+                quantity = _uiState.value.quantity,
+            )
+            addToCartUseCase(cart)
+            _uiState.update {
+                it.copy(quantity = DetailUiState().quantity)
+            }
+        }
+    }
+
+    private fun getCartItemCount() {
+        viewModelScope.launch {
+            getItemCountFromCartUseCase().collect {
+                _uiState.update { state ->
+                    state.copy(cartItemCount = it)
+                }
+            }
+        }
+    }
+
+    var job: Job? = null
+    fun showUiMessage(message: String) {
+        if (message.isEmpty()) return
+        _uiState.update {
+            it.copy(uiMessage = null)
+        }
+        job?.cancel()
+        job = viewModelScope.launch {
             _uiState.update {
                 it.copy(uiMessage = message)
             }

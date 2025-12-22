@@ -17,4 +17,7 @@ sealed class Route {
 
     @Serializable
     data class Detail(val id: Int) : NavKey
+
+    @Serializable
+    data object Cart : NavKey
 }

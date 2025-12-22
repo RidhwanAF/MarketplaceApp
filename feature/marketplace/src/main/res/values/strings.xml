@@ -21,4 +21,12 @@
     <string name="show_more">Show More</string>
     <string name="show_less">Show Less</string>
     <string name="add_to_cart">Add to Cart</string>
+    <string name="price_quantity"><![CDATA[Price & Quantity]]></string>
+    <string name="subtract">Subtract</string>
+    <string name="sum">Sum</string>
+    <string name="per_item">" /item"</string>
+    <string name="total">Total</string>
+    <string name="items_with_args">%1$d item</string>
+    <string name="item_with_args">%1$d item</string>
+    <string name="added_to_cart">Added to Cart</string>
 </resources>

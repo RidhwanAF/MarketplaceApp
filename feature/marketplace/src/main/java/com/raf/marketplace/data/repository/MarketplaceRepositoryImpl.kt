@@ -6,9 +6,12 @@ import com.raf.core.data.utility.NetworkHelper.isNetworkAvailable
 import com.raf.core.domain.model.ApiResult
 import com.raf.marketplace.data.local.room.MarketplaceDatabase
 import com.raf.marketplace.data.remote.MarketplaceApiService
+import com.raf.marketplace.data.repository.mapper.CartMapper.toDomain
+import com.raf.marketplace.data.repository.mapper.CartMapper.toEntity
 import com.raf.marketplace.data.repository.mapper.ProductMapper.toDatabase
 import com.raf.marketplace.data.repository.mapper.ProductMapper.toDomain
 import com.raf.marketplace.data.utility.ProductQueryHelper
+import com.raf.marketplace.domain.model.Cart
 import com.raf.marketplace.domain.model.Product
 import com.raf.marketplace.domain.model.ProductFilter
 import com.raf.marketplace.domain.repository.MarketplaceRepository
@@ -25,6 +28,7 @@ class MarketplaceRepositoryImpl @Inject constructor(
 ) : MarketplaceRepository {
 
     private val productDao = database.productDao
+    private val cartDao = database.cartDao
 
     override suspend fun fetchProducts(token: String): ApiResult<List<Product>> {
         if (!isNetworkAvailable(context)) return ApiResult.Error("")
@@ -116,6 +120,54 @@ class MarketplaceRepositoryImpl @Inject constructor(
 
     override fun getProductCategories(): Flow<List<String>> {
         return productDao.getCategories()
+    }
+
+    override suspend fun addToCart(cart: Cart): Result<Unit> {
+        try {
+            cartDao.upsertItem(cart.toEntity())
+            return Result.success(Unit)
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to add item to cart", e)
+            return Result.failure(e)
+        }
+    }
+
+    override fun getAllItemFromCart(): Flow<List<Cart>> {
+        return try {
+            cartDao.getAllItems().map { cartEntities -> cartEntities.map { it.toDomain() } }
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to get all items from cart", e)
+            flowOf(emptyList())
+        }
+    }
+
+    override fun getItemCountFromCart(): Flow<Int> {
+        return try {
+            cartDao.getItemCount()
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to get item count from cart", e)
+            flowOf(0)
+        }
+    }
+
+    override suspend fun deleteItemCartByProductId(productId: Int): Result<Unit> {
+        return try {
+            cartDao.deleteItemByProductId(productId)
+            Result.success(Unit)
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to delete item from cart", e)
+            Result.failure(e)
+        }
+    }
+
+    override suspend fun deleteAllItemFromCart(): Result<Unit> {
+        return try {
+            cartDao.deleteAllItems()
+            Result.success(Unit)
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to delete all items from cart", e)
+            Result.failure(e)
+        }
     }
 
     private companion object {

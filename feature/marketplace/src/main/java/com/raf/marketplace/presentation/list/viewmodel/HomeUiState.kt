@@ -5,6 +5,7 @@ import com.raf.marketplace.domain.model.Product
 data class HomeUiState(
     val products: List<Product> = emptyList(),
     val categories: List<String> = emptyList(),
+    val cartItemCount: Int = 0,
     val isLoading: Boolean = false,
     val uiMessage: String? = null
 )

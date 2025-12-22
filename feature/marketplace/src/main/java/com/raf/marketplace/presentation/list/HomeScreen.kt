@@ -1,5 +1,6 @@
 package com.raf.marketplace.presentation.list
 
+import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -16,6 +17,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.FloatingToolbarDefaults
 import androidx.compose.material3.FloatingToolbarExitDirection.Companion.Bottom
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
@@ -43,11 +45,15 @@ import com.raf.marketplace.presentation.list.viewmodel.HomeViewModel
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun SharedTransitionScope.HomeScreen(
+    modifier: Modifier = Modifier,
+    animatedVisibilityScope: AnimatedVisibilityScope,
     viewModel: HomeViewModel = hiltViewModel(),
+    selectedProductId: Int? = null,
     isSettingsScreenVisible: Boolean = false,
     showChartMenu: Boolean = true,
     onNavigateToSettings: () -> Unit = {},
     onNavigateToDetail: (Int) -> Unit = {},
+    onNavigateToCart: () -> Unit = {},
 ) {
     val localLayoutDirection = LocalLayoutDirection.current
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
@@ -76,7 +82,9 @@ fun SharedTransitionScope.HomeScreen(
                     searchQuery = productFilterState.query,
                     onSearchQueryChange = viewModel::onSearchQueryChange,
                     isSettingsButtonVisible = !isSettingsScreenVisible,
-                    onNavigateToSettings = onNavigateToSettings
+                    onNavigateToSettings = onNavigateToSettings,
+                    cartItemCount = uiState.cartItemCount,
+                    onNavigateToCart = onNavigateToCart
                 )
             },
             floatingActionButton = {
@@ -90,7 +98,7 @@ fun SharedTransitionScope.HomeScreen(
             snackbarHost = {
                 SnackbarHost(snackbarHostState)
             },
-            modifier = Modifier
+            modifier = modifier
                 .fillMaxSize()
                 .nestedScroll(scrollBehavior.nestedScrollConnection)
                 .nestedScroll(floatingActionToolbarScrollBehavior)
@@ -129,8 +137,10 @@ fun SharedTransitionScope.HomeScreen(
                         item {
                             Text(
                                 text = stringResource(R.string.no_products_found),
+                                style = MaterialTheme.typography.bodyMedium,
                                 modifier = Modifier
                                     .fillMaxWidth()
+                                    .padding(16.dp)
                             )
                         }
                         return@LazyVerticalStaggeredGrid
@@ -141,7 +151,9 @@ fun SharedTransitionScope.HomeScreen(
                         key = { product -> product.id }
                     ) { product ->
                         ProductItem(
+                            animatedVisibilityScope = animatedVisibilityScope,
                             product = product,
+                            selectedId = selectedProductId,
                             onClicked = {
                                 onNavigateToDetail(product.id)
                             },

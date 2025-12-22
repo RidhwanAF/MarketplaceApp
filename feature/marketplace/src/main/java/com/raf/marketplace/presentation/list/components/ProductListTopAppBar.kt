@@ -3,6 +3,7 @@ package com.raf.marketplace.presentation.list.components
 import androidx.activity.compose.PredictiveBackHandler
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -21,6 +22,8 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.ShoppingCart
+import androidx.compose.material3.Badge
+import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
@@ -70,6 +73,8 @@ fun SharedTransitionScope.ProductListTopAppBar(
     onSearchQueryChange: (String) -> Unit,
     isSettingsButtonVisible: Boolean = true,
     onNavigateToSettings: () -> Unit = {},
+    cartItemCount: Int = 0,
+    onNavigateToCart: () -> Unit = {},
 ) {
     TopAppBar(
         title = {
@@ -95,18 +100,34 @@ fun SharedTransitionScope.ProductListTopAppBar(
                             Text(text = stringResource(R.string.carts))
                         }
                     },
-                    state = rememberTooltipState()
+                    state = rememberTooltipState(),
                 ) {
-                    IconButton(
-                        shapes = customIconButtonShapes(),
-                        onClick = {
-                            // TODO: Carts Show
+                    BadgedBox(
+                        badge = {
+                            this@TopAppBar.AnimatedVisibility(
+                                visible = cartItemCount > 0,
+                                enter = scaleIn(animationSpec = MaterialTheme.motionScheme.fastSpatialSpec()),
+                                exit = scaleOut(animationSpec = MaterialTheme.motionScheme.fastSpatialSpec())
+                            ) {
+                                Badge {
+                                    Text(
+                                        text = cartItemCount.toString(),
+                                        maxLines = 1,
+                                        overflow = TextOverflow.Ellipsis
+                                    )
+                                }
+                            }
                         }
                     ) {
-                        Icon(
-                            imageVector = Icons.Default.ShoppingCart,
-                            contentDescription = stringResource(R.string.carts)
-                        )
+                        IconButton(
+                            shapes = customIconButtonShapes(),
+                            onClick = onNavigateToCart
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.ShoppingCart,
+                                contentDescription = stringResource(R.string.carts)
+                            )
+                        }
                     }
                 }
             }

@@ -6,10 +6,15 @@ import com.raf.marketplace.data.local.room.MarketplaceDatabase
 import com.raf.marketplace.data.remote.MarketplaceApiService
 import com.raf.marketplace.data.repository.MarketplaceRepositoryImpl
 import com.raf.marketplace.domain.repository.MarketplaceRepository
-import com.raf.marketplace.domain.usecase.FetchProductByIdUseCase
-import com.raf.marketplace.domain.usecase.FetchProductsUseCase
-import com.raf.marketplace.domain.usecase.GetProductCategoriesUseCase
-import com.raf.marketplace.domain.usecase.GetProductsUseCase
+import com.raf.marketplace.domain.usecase.cart.AddToCartUseCase
+import com.raf.marketplace.domain.usecase.cart.DeleteAllItemFromCartUseCase
+import com.raf.marketplace.domain.usecase.cart.DeleteItemCartByProductIdUseCase
+import com.raf.marketplace.domain.usecase.cart.GetAllItemFromCartUseCase
+import com.raf.marketplace.domain.usecase.cart.GetItemCountFromCartUseCase
+import com.raf.marketplace.domain.usecase.product.FetchProductByIdUseCase
+import com.raf.marketplace.domain.usecase.product.FetchProductsUseCase
+import com.raf.marketplace.domain.usecase.product.GetProductCategoriesUseCase
+import com.raf.marketplace.domain.usecase.product.GetProductsUseCase
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -72,5 +77,35 @@ object MarketPlaceModule {
     @Singleton
     fun provideFetchProductByIdUseCase(marketplaceRepository: MarketplaceRepository): FetchProductByIdUseCase {
         return FetchProductByIdUseCase(marketplaceRepository)
+    }
+
+    @Provides
+    @Singleton
+    fun provideAddToCartUseCase(marketplaceRepository: MarketplaceRepository): AddToCartUseCase {
+        return AddToCartUseCase(marketplaceRepository)
+    }
+
+    @Provides
+    @Singleton
+    fun provideDeleteAllItemFromCartUseCase(marketplaceRepository: MarketplaceRepository): DeleteAllItemFromCartUseCase {
+        return DeleteAllItemFromCartUseCase(marketplaceRepository)
+    }
+
+    @Provides
+    @Singleton
+    fun provideDeleteItemCartByProductIdUseCase(marketplaceRepository: MarketplaceRepository): DeleteItemCartByProductIdUseCase {
+        return DeleteItemCartByProductIdUseCase(marketplaceRepository)
+    }
+
+    @Provides
+    @Singleton
+    fun provideGetAllItemFromCartUseCase(marketplaceRepository: MarketplaceRepository): GetAllItemFromCartUseCase {
+        return GetAllItemFromCartUseCase(marketplaceRepository)
+    }
+
+    @Provides
+    @Singleton
+    fun provideGetItemCountFromCartUseCase(marketplaceRepository: MarketplaceRepository): GetItemCountFromCartUseCase {
+        return GetItemCountFromCartUseCase(marketplaceRepository)
     }
 }

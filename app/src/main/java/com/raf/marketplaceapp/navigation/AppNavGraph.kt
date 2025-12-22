@@ -10,6 +10,7 @@ import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.material3.adaptive.ExperimentalMaterial3AdaptiveApi
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.material3.adaptive.navigation3.ListDetailSceneStrategy
@@ -118,9 +119,13 @@ fun AppNavGraph(
                     metadata = ListDetailSceneStrategy.listPane(sceneKey = "products")
                 ) {
                     val isSettingsScreenVisible = backStack.contains(Route.Settings)
-                    val isDetailScreenVisible = backStack.any { it is Route.Detail }
+                    val detailEntry = backStack.findLast { it is Route.Detail } as? Route.Detail
+                    val isDetailScreenVisible = detailEntry != null
+                    val selectedProductId = detailEntry?.id
 
                     HomeScreen(
+                        animatedVisibilityScope = LocalNavAnimatedContentScope.current,
+                        selectedProductId = selectedProductId,
                         isSettingsScreenVisible = isSettingsScreenVisible,
                         showChartMenu = !isDetailScreenVisible,
                         onNavigateToSettings = {
@@ -131,7 +136,10 @@ fun AppNavGraph(
                                 entry is Route.Detail && entry.id != id
                             }
                             backStack.add(Route.Detail(id))
-                        }
+                        },
+                        onNavigateToCart = {
+                            backStack.add(Route.Cart)
+                        },
                     )
                 }
 
@@ -149,14 +157,24 @@ fun AppNavGraph(
                     )
 
                     DetailScreen(
+                        animatedVisibilityScope = LocalNavAnimatedContentScope.current,
                         viewModel = viewModel,
                         isExpandedScreen = isExpandedScreen,
+                        onNavigateToCart = {
+                            backStack.add(Route.Cart)
+                        },
                         onBack = {
                             if (backStack.size > 1) {
                                 backStack.removeLastOrNull()
                             }
                         }
                     )
+                }
+
+                entry<Route.Cart>(
+                    metadata = ListDetailSceneStrategy.extraPane(sceneKey = "products")
+                ) {
+                    Text("CART")
                 }
             }
         )
