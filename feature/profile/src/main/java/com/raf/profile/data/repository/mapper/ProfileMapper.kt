@@ -8,10 +8,10 @@ import com.raf.profile.data.remote.response.AddressResponse
 import com.raf.profile.data.remote.response.GeolocationResponse
 import com.raf.profile.data.remote.response.NameResponse
 import com.raf.profile.data.remote.response.ProfileResponse
-import com.raf.profile.domain.model.Profile
-import com.raf.profile.domain.model.ProfileAddress
-import com.raf.profile.domain.model.ProfileGeolocation
-import com.raf.profile.domain.model.ProfileName
+import com.raf.core.domain.model.Profile
+import com.raf.core.domain.model.ProfileAddress
+import com.raf.core.domain.model.ProfileGeolocation
+import com.raf.core.domain.model.ProfileName
 
 object ProfileMapper {
 

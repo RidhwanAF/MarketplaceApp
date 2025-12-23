@@ -28,7 +28,7 @@ import coil3.compose.SubcomposeAsyncImage
 import com.raf.marketplace.R
 import com.raf.marketplace.domain.model.Product
 import com.raf.marketplace.presentation.components.RatingBar
-import com.raf.marketplace.presentation.utilities.CurrencyHelper.covertToIDR
+import com.raf.marketplace.presentation.utilities.CurrencyHelper.convertToIDR
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
@@ -110,7 +110,7 @@ fun SharedTransitionScope.ProductItem(
                     .fillMaxWidth(),
             )
             Text(
-                text = product.priceInDollar.covertToIDR(),
+                text = product.priceInDollar.convertToIDR(),
                 fontWeight = FontWeight.Bold,
                 style = MaterialTheme.typography.titleLarge,
                 color = MaterialTheme.colorScheme.primary,

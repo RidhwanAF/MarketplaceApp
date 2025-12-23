@@ -7,7 +7,6 @@ import com.raf.profile.data.remote.ProfileApiService
 import com.raf.profile.data.repository.ProfileRepositoryImpl
 import com.raf.profile.domain.repository.ProfileRepository
 import com.raf.profile.domain.usecase.DeleteUserProfileByIdUseCase
-import com.raf.profile.domain.usecase.GetUserProfileUseCase
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -46,12 +45,6 @@ object ProfileModule {
         profileApiService: ProfileApiService,
     ): ProfileRepository {
         return ProfileRepositoryImpl(context, profileDatabase, profileApiService)
-    }
-
-    @Provides
-    @Singleton
-    fun provideGetProfileUseCase(profileRepository: ProfileRepository): GetUserProfileUseCase {
-        return GetUserProfileUseCase(profileRepository)
     }
 
     @Provides

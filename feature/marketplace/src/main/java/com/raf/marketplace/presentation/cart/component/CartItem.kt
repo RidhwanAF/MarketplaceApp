@@ -55,7 +55,7 @@ import com.raf.core.presentation.components.customIconButtonShapes
 import com.raf.core.presentation.components.shimmerLoading
 import com.raf.marketplace.R
 import com.raf.marketplace.presentation.cart.viewmodel.ProductInCartUi
-import com.raf.marketplace.presentation.utilities.CurrencyHelper.covertToIDR
+import com.raf.marketplace.presentation.utilities.CurrencyHelper.convertToIDR
 import kotlinx.coroutines.launch
 import kotlin.math.abs
 import kotlin.math.sign
@@ -269,7 +269,7 @@ fun CartItem(
                         }
                     }
                     Text(
-                        text = (productInCart.product.priceInDollar * productInCart.cart.quantity).covertToIDR(),
+                        text = (productInCart.product.priceInDollar * productInCart.cart.quantity).convertToIDR(),
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold,
                     )

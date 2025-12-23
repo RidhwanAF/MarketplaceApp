@@ -37,4 +37,10 @@
     <string name="this_item">this item</string>
     <string name="yes">Yes</string>
     <string name="no">No</string>
+    <string name="proceed">Proceed</string>
+    <string name="price_detail">Price Detail</string>
+    <string name="address_detail">Address Detail</string>
+    <string name="phone_number">Phone Number</string>
+    <string name="address">Address</string>
+    <string name="checkout_success">Checkout Success</string>
 </resources>

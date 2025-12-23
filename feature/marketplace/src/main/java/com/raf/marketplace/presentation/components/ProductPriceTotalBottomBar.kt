@@ -28,7 +28,7 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import com.raf.core.presentation.components.customButtonShapes
 import com.raf.marketplace.R
-import com.raf.marketplace.presentation.utilities.CurrencyHelper.covertToIDR
+import com.raf.marketplace.presentation.utilities.CurrencyHelper.convertToIDR
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
@@ -81,7 +81,7 @@ fun ProductPriceTotalBottomBar(
                         }
                     }
                     append("\n")
-                    append(totalPriceInDollar.covertToIDR())
+                    append(totalPriceInDollar.convertToIDR())
                 },
                 style = MaterialTheme.typography.titleLarge,
                 color = MaterialTheme.colorScheme.primary,

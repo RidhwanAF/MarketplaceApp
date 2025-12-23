@@ -88,7 +88,7 @@ import com.raf.marketplace.presentation.components.ProductPriceTotalBottomBar
 import com.raf.marketplace.presentation.components.RatingBar
 import com.raf.marketplace.presentation.detail.components.ProductImageViewer
 import com.raf.marketplace.presentation.detail.viewmodel.DetailViewModel
-import com.raf.marketplace.presentation.utilities.CurrencyHelper.covertToIDR
+import com.raf.marketplace.presentation.utilities.CurrencyHelper.convertToIDR
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
@@ -419,7 +419,7 @@ fun SharedTransitionScope.DetailScreen(
                             ) {
                                 Text(
                                     text = buildAnnotatedString {
-                                        append(product.priceInDollar.covertToIDR())
+                                        append(product.priceInDollar.convertToIDR())
                                         withStyle(
                                             style = MaterialTheme.typography.bodyMedium.toSpanStyle()
                                         ) {

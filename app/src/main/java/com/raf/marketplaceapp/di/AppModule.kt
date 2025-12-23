@@ -7,15 +7,20 @@ import com.raf.auth.data.repository.AuthRepositoryImpl
 import com.raf.core.domain.contract.AppSettingsProvider
 import com.raf.core.domain.contract.AuthProvider
 import com.raf.core.domain.contract.CartProvider
+import com.raf.core.domain.contract.ProfileProvider
 import com.raf.core.domain.usecase.DeleteAllItemCartUseCase
 import com.raf.core.domain.usecase.GetAppSettingsUseCase
 import com.raf.core.domain.usecase.GetAuthTokenUseCase
 import com.raf.core.domain.usecase.GetUserIdUseCase
+import com.raf.core.domain.usecase.GetUserProfileUseCase
 import com.raf.core.domain.usecase.LogoutUseCase
 import com.raf.marketplace.data.local.room.MarketplaceDatabase
 import com.raf.marketplace.data.remote.MarketplaceApiService
 import com.raf.marketplace.data.repository.MarketplaceRepositoryImpl
 import com.raf.marketplaceapp.BuildConfig
+import com.raf.profile.data.local.room.ProfileDatabase
+import com.raf.profile.data.remote.ProfileApiService
+import com.raf.profile.data.repository.ProfileRepositoryImpl
 import com.raf.settings.data.local.AppSettingsDataStore
 import com.raf.settings.data.repository.AppSettingsRepositoryImpl
 import dagger.Module
@@ -85,6 +90,16 @@ object AppModule {
         return MarketplaceRepositoryImpl(context, apiService, marketplaceDb)
     }
 
+    @Provides
+    @Singleton
+    fun provideProfileProvider(
+        @ApplicationContext context: Context,
+        profileDatabase: ProfileDatabase,
+        profileApiService: ProfileApiService,
+    ): ProfileProvider {
+        return ProfileRepositoryImpl(context, profileDatabase, profileApiService)
+    }
+
     /**
      * Use Cases
      */
@@ -98,6 +113,12 @@ object AppModule {
     @Singleton
     fun provideGetAuthTokenUseCase(authProvider: AuthProvider): GetAuthTokenUseCase {
         return GetAuthTokenUseCase(authProvider)
+    }
+
+    @Provides
+    @Singleton
+    fun provideGetUserProfileUseCase(provider: ProfileProvider): GetUserProfileUseCase {
+        return GetUserProfileUseCase(provider)
     }
 
     @Provides

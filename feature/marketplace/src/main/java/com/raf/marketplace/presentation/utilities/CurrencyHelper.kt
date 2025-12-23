@@ -13,7 +13,7 @@ object CurrencyHelper {
         return format.format(this)
     }
 
-    fun Number.covertToIDR(pricePerDollar: Double = DOLLAR_PRICE.toDouble()): String {
+    fun Number.convertToIDR(pricePerDollar: Double = DOLLAR_PRICE.toDouble()): String {
         val price = this.toDouble() * pricePerDollar
         val localeID = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.BAKLAVA) {
             Locale.of("id", "ID")

@@ -1,6 +1,6 @@
 package com.raf.profile.presentation.viewmodel
 
-import com.raf.profile.domain.model.Profile
+import com.raf.core.domain.model.Profile
 
 data class ProfileUiState(
     val isLoading: Boolean = false,

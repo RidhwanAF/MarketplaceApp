@@ -4,12 +4,13 @@ import android.content.Context
 import android.util.Log
 import com.raf.core.data.utility.EncryptionManager
 import com.raf.core.data.utility.NetworkHelper
+import com.raf.core.domain.contract.ProfileProvider
 import com.raf.core.domain.model.ApiResult
+import com.raf.core.domain.model.Profile
 import com.raf.profile.data.local.room.ProfileDatabase
 import com.raf.profile.data.remote.ProfileApiService
 import com.raf.profile.data.repository.mapper.ProfileMapper.toDomain
 import com.raf.profile.data.repository.mapper.ProfileMapper.toEntity
-import com.raf.profile.domain.model.Profile
 import com.raf.profile.domain.repository.ProfileRepository
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
@@ -18,7 +19,7 @@ class ProfileRepositoryImpl @Inject constructor(
     @param:ApplicationContext private val context: Context,
     profileDb: ProfileDatabase,
     private val apiService: ProfileApiService,
-) : ProfileRepository {
+) : ProfileRepository, ProfileProvider {
 
     private val dao = profileDb.dao
 

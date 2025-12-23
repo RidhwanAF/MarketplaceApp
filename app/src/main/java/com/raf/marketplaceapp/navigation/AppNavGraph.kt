@@ -211,6 +211,9 @@ fun AppNavGraph(
                             if (backStack.size > 1) {
                                 backStack.removeLastOrNull()
                             }
+                        },
+                        onCheckoutSuccess = {
+                            backStack.removeIf { it is Route.Cart }
                         }
                     )
                 }

@@ -3,11 +3,21 @@ package com.raf.marketplace.presentation.cart
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.SharedTransitionScope
+import androidx.compose.animation.core.FastOutLinearInEasing
+import androidx.compose.animation.core.InfiniteRepeatableSpec
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.calculateEndPadding
@@ -20,6 +30,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.ShoppingCartCheckout
 import androidx.compose.material.icons.outlined.ShoppingCart
@@ -44,9 +55,13 @@ import androidx.compose.material3.rememberTooltipState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.stringResource
@@ -58,6 +73,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.raf.core.presentation.components.customIconButtonShapes
 import com.raf.marketplace.R
 import com.raf.marketplace.presentation.cart.component.CartItem
+import com.raf.marketplace.presentation.cart.component.CheckoutSummaryView
 import com.raf.marketplace.presentation.cart.viewmodel.CartViewModel
 import com.raf.marketplace.presentation.components.ProductPriceTotalBottomBar
 
@@ -69,12 +85,18 @@ fun SharedTransitionScope.CartScreen(
     viewModel: CartViewModel = hiltViewModel(),
     onBack: () -> Unit,
     onItemClicked: (productId: Int) -> Unit,
+    onCheckoutSuccess: () -> Unit,
 ) {
     val localLayoutDirection = LocalLayoutDirection.current
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
     val snackbarHostState = remember { SnackbarHostState() }
+    val infiniteTransition = rememberInfiniteTransition()
 
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+
+    var showCheckoutSummary by rememberSaveable {
+        mutableStateOf(false)
+    }
 
     // Error Message
     LaunchedEffect(uiState.uiMessage) {
@@ -83,174 +105,242 @@ fun SharedTransitionScope.CartScreen(
         }
     }
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = {
-                    Text(
-                        text = stringResource(R.string.carts),
-                        style = MaterialTheme.typography.titleLarge,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
-                    )
-                },
-                navigationIcon = {
-                    TooltipBox(
-                        positionProvider =
-                            TooltipDefaults.rememberTooltipPositionProvider(
-                                TooltipAnchorPosition.Below
-                            ),
-                        tooltip = {
-                            PlainTooltip {
-                                Text(text = stringResource(R.string.back))
+    Box(
+        modifier = Modifier.fillMaxSize()
+    ) {
+        Scaffold(
+            topBar = {
+                TopAppBar(
+                    title = {
+                        Text(
+                            text = stringResource(R.string.carts),
+                            style = MaterialTheme.typography.titleLarge,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                    },
+                    navigationIcon = {
+                        TooltipBox(
+                            positionProvider =
+                                TooltipDefaults.rememberTooltipPositionProvider(
+                                    TooltipAnchorPosition.Below
+                                ),
+                            tooltip = {
+                                PlainTooltip {
+                                    Text(text = stringResource(R.string.back))
+                                }
+                            },
+                            state = rememberTooltipState()
+                        ) {
+                            IconButton(
+                                shapes = customIconButtonShapes(),
+                                onClick = onBack
+                            ) {
+                                Icon(
+                                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                                    contentDescription = stringResource(R.string.back)
+                                )
                             }
-                        },
-                        state = rememberTooltipState()
-                    ) {
-                        IconButton(
-                            shapes = customIconButtonShapes(),
-                            onClick = onBack
+                        }
+                    },
+                    scrollBehavior = scrollBehavior
+                )
+            },
+            bottomBar = {
+                AnimatedVisibility(
+                    visible = uiState.productsInCart.isNotEmpty() && !showCheckoutSummary,
+                    enter = scaleIn(animationSpec = MaterialTheme.motionScheme.fastSpatialSpec()) + slideInVertically { it },
+                    exit = slideOutVertically { it } + scaleOut(animationSpec = MaterialTheme.motionScheme.fastSpatialSpec())
+                ) {
+                    ProductPriceTotalBottomBar(
+                        totalPriceInDollar = uiState.totalPriceInDollar,
+                        quantity = uiState.totalQuantity,
+                        buttonLabel = stringResource(R.string.proceed),
+                        buttonIcon = Icons.Default.ShoppingCartCheckout,
+                        onButtonClicked = { showCheckoutSummary = true },
+                        modifier = Modifier
+                            .sharedElement(
+                                sharedContentState = rememberSharedContentState("checkout-summary-container-key"),
+                                animatedVisibilityScope = this
+                            )
+                    )
+                }
+            },
+            snackbarHost = {
+                SnackbarHost(snackbarHostState)
+            },
+            modifier = modifier
+                .sharedBounds(
+                    sharedContentState = rememberSharedContentState("cart-container"),
+                    animatedVisibilityScope = animatedVisibilityScope
+                )
+                .fillMaxSize()
+                .nestedScroll(scrollBehavior.nestedScrollConnection)
+        ) { innerPadding ->
+            LazyColumn(
+                contentPadding = PaddingValues(
+                    start = innerPadding.calculateStartPadding(localLayoutDirection) + 16.dp,
+                    end = innerPadding.calculateEndPadding(localLayoutDirection) + 16.dp,
+                    top = innerPadding.calculateTopPadding(),
+                    bottom = innerPadding.calculateBottomPadding() + 16.dp
+                ),
+                modifier = Modifier.fillMaxSize()
+            ) {
+                if (uiState.productsInCart.isEmpty()) {
+                    item {
+                        Column(
+                            verticalArrangement = Arrangement.spacedBy(16.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(16.dp)
                         ) {
                             Icon(
-                                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                                contentDescription = stringResource(R.string.back)
+                                imageVector = Icons.Outlined.ShoppingCart,
+                                contentDescription = stringResource(R.string.empty_cart_message),
+                                modifier = Modifier.size(64.dp)
+                            )
+                            Text(
+                                text = stringResource(R.string.empty_cart_message),
+                                style = MaterialTheme.typography.titleLarge,
+                                textAlign = TextAlign.Center,
+                                modifier = Modifier.fillMaxWidth()
                             )
                         }
                     }
-                },
-                scrollBehavior = scrollBehavior
-            )
-        },
-        bottomBar = {
-            AnimatedVisibility(
-                visible = uiState.productsInCart.isNotEmpty(),
-                enter = scaleIn(animationSpec = MaterialTheme.motionScheme.fastSpatialSpec()) + slideInVertically { it },
-                exit = slideOutVertically { it } + scaleOut(animationSpec = MaterialTheme.motionScheme.fastSpatialSpec())
-            ) {
-                ProductPriceTotalBottomBar(
-                    totalPriceInDollar = uiState.totalPriceInDollar,
-                    quantity = uiState.totalQuantity,
-                    buttonLabel = stringResource(R.string.checkout),
-                    buttonIcon = Icons.Default.ShoppingCartCheckout,
-                    onButtonClicked = {
-                        // TODO: Checkout
-                    }
-                )
+                    return@LazyColumn
+                }
+
+                items(
+                    items = uiState.productsInCart,
+                    key = { it.product.id }
+                ) { productInCart ->
+                    CartItem(
+                        productInCart = productInCart,
+                        onSumOrSubtractQuantity = { isSum ->
+                            if (productInCart.cart.quantity == 1 && !isSum) {
+                                viewModel.onRemovingItemFromCart(productInCart.product.id)
+                            } else {
+                                viewModel.updateCartItem(productInCart.product.id, isSum)
+                            }
+                        },
+                        onClick = {
+                            onItemClicked(productInCart.product.id)
+                        },
+                        onRemovingProductId = uiState.removingItemById,
+                        onRemove = {
+                            viewModel.onRemovingItemFromCart(productInCart.product.id)
+                        },
+                        modifier = Modifier.animateItem()
+                    )
+                }
             }
-        },
-        snackbarHost = {
-            SnackbarHost(snackbarHostState)
-        },
-        modifier = modifier
-            .sharedBounds(
-                sharedContentState = rememberSharedContentState("cart-container"),
-                animatedVisibilityScope = animatedVisibilityScope
-            )
-            .fillMaxSize()
-            .nestedScroll(scrollBehavior.nestedScrollConnection)
-    ) { innerPadding ->
-        LazyColumn(
-            contentPadding = PaddingValues(
-                start = innerPadding.calculateStartPadding(localLayoutDirection) + 16.dp,
-                end = innerPadding.calculateEndPadding(localLayoutDirection) + 16.dp,
-                top = innerPadding.calculateTopPadding(),
-                bottom = innerPadding.calculateBottomPadding() + 16.dp
-            ),
-            modifier = Modifier.fillMaxSize()
-        ) {
-            if (uiState.productsInCart.isEmpty()) {
-                item {
-                    Column(
-                        verticalArrangement = Arrangement.spacedBy(16.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(16.dp)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Outlined.ShoppingCart,
-                            contentDescription = stringResource(R.string.empty_cart_message),
-                            modifier = Modifier.size(64.dp)
-                        )
-                        Text(
-                            text = stringResource(R.string.empty_cart_message),
-                            style = MaterialTheme.typography.titleLarge,
-                            textAlign = TextAlign.Center,
-                            modifier = Modifier.fillMaxWidth()
-                        )
+        }
+
+        // Checkout Summary
+        CheckoutSummaryView(
+            visible = showCheckoutSummary,
+            profileName = "${uiState.profile?.name?.firstname?.replaceFirstChar { it.uppercase() }} ${uiState.profile?.name?.lastname?.replaceFirstChar { it.uppercase() }}",
+            profilePhoneNumber = uiState.profile?.phone ?: "",
+            profileAddress = "${uiState.profile?.address?.number} ${uiState.profile?.address?.street?.replaceFirstChar { it.uppercase() }}, ${uiState.profile?.address?.city?.replaceFirstChar { it.uppercase() }}, ${uiState.profile?.address?.zipcode}",
+            totalPriceInDollar = uiState.totalPriceInDollar,
+            totalQuantity = uiState.totalQuantity,
+            productsInCart = uiState.productsInCart,
+            onClose = { showCheckoutSummary = false },
+            onCheckout = { viewModel.checkoutSimulation(onCheckoutSuccess = onCheckoutSuccess) }
+        )
+
+        /**
+         * Dialogs
+         */
+        // Delete Item
+        uiState.removingItemById?.let { removingId ->
+            val currentRemovingProduct =
+                uiState.productsInCart.find { it.product.id == removingId }
+
+            AlertDialog(
+                onDismissRequest = { viewModel.onRemovingItemFromCart(null) },
+                icon = {
+                    Icon(
+                        imageVector = Icons.Default.Delete,
+                        contentDescription = stringResource(R.string.remove_item)
+                    )
+                },
+                title = {
+                    Text(
+                        text = stringResource(R.string.remove_item),
+                        maxLines = 1,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                },
+                text = {
+                    Text(
+                        text = stringResource(
+                            R.string.remove_item_with_args,
+                            currentRemovingProduct?.product?.title
+                                ?: stringResource(R.string.this_item)
+                        ),
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                },
+                confirmButton = {
+                    TextButton(
+                        onClick = { viewModel.deleteCartItem(removingId) }
+                    ) { Text(text = stringResource(R.string.yes)) }
+                },
+                dismissButton = {
+                    TextButton(onClick = { viewModel.onRemovingItemFromCart(null) }) {
+                        Text(text = stringResource(R.string.no))
                     }
                 }
-                return@LazyColumn
-            }
-
-            items(
-                items = uiState.productsInCart,
-                key = { it.product.id }
-            ) { productInCart ->
-                CartItem(
-                    productInCart = productInCart,
-                    onSumOrSubtractQuantity = { isSum ->
-                        if (productInCart.cart.quantity == 1 && !isSum) {
-                            viewModel.onRemovingItemFromCart(productInCart.product.id)
-                        } else {
-                            viewModel.updateCartItem(productInCart.product.id, isSum)
+            )
+        }
+        // Checkout Success
+        AnimatedVisibility(
+            visible = uiState.checkoutSimulation,
+            enter = fadeIn(),
+            exit = fadeOut()
+        ) {
+            val movingFloat by infiniteTransition.animateFloat(
+                initialValue = 0f,
+                targetValue = 100f,
+                animationSpec = InfiniteRepeatableSpec(
+                    animation = tween(
+                        durationMillis = 500,
+                        easing = FastOutLinearInEasing
+                    ),
+                    repeatMode = RepeatMode.Reverse
+                )
+            )
+            Column(
+                verticalArrangement = Arrangement.spacedBy(16.dp, Alignment.CenterVertically),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(MaterialTheme.colorScheme.background.copy(0.75f))
+                    .padding(16.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Default.CheckCircle,
+                    contentDescription = stringResource(R.string.checkout_success),
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier
+                        .graphicsLayer {
+                            translationY = movingFloat
                         }
-                    },
-                    onClick = {
-                        onItemClicked(productInCart.product.id)
-                    },
-                    onRemovingProductId = uiState.removingItemById,
-                    onRemove = {
-                        viewModel.onRemovingItemFromCart(productInCart.product.id)
-                    },
-                    modifier = Modifier.animateItem()
+                        .size(100.dp)
+                )
+                Text(
+                    text = stringResource(R.string.checkout_success),
+                    style = MaterialTheme.typography.titleLarge,
+                    textAlign = TextAlign.Center,
+                    color = MaterialTheme.colorScheme.onBackground,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 32.dp),
                 )
             }
         }
-    }
-
-    /**
-     * Dialogs
-     */
-    uiState.removingItemById?.let { removingId ->
-        val currentRemovingProduct =
-            uiState.productsInCart.find { it.product.id == removingId }
-
-        AlertDialog(
-            onDismissRequest = { viewModel.onRemovingItemFromCart(null) },
-            icon = {
-                Icon(
-                    imageVector = Icons.Default.Delete,
-                    contentDescription = stringResource(R.string.remove_item)
-                )
-            },
-            title = {
-                Text(
-                    text = stringResource(R.string.remove_item),
-                    maxLines = 1,
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier.fillMaxWidth()
-                )
-            },
-            text = {
-                Text(
-                    text = stringResource(
-                        R.string.remove_item_with_args,
-                        currentRemovingProduct?.product?.title ?: stringResource(R.string.this_item)
-                    ),
-                    modifier = Modifier.fillMaxWidth()
-                )
-            },
-            confirmButton = {
-                TextButton(
-                    onClick = { viewModel.deleteCartItem(removingId) }
-                ) { Text(text = stringResource(R.string.yes)) }
-            },
-            dismissButton = {
-                TextButton(onClick = { viewModel.onRemovingItemFromCart(null) }) {
-                    Text(text = stringResource(R.string.no))
-                }
-            }
-        )
     }
 }
