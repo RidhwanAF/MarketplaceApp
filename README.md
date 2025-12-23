@@ -38,7 +38,7 @@ https://github.com/user-attachments/assets/e0ccff56-076b-4d6b-90eb-689fe4942532
 | **Async** | Coroutines + Flow |
 | **Image** | Coil |
 
-## ✨ Key Features
+## Key Features
 
 ### 1. Navigation 3 & Expressive UI
 * **Shared Element Transitions**: Seamless `sharedBounds` animations transforming list items into detail screens.
