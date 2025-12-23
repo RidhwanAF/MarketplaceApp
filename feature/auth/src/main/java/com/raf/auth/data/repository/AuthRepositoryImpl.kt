@@ -1,7 +1,6 @@
 package com.raf.auth.data.repository
 
 import android.util.Log
-import com.google.gson.Gson
 import com.raf.auth.data.local.AuthDataStore
 import com.raf.auth.data.remote.AuthApiService
 import com.raf.auth.data.remote.model.LoginRequest
@@ -11,6 +10,7 @@ import com.raf.core.data.utility.EncryptionManager
 import com.raf.core.domain.contract.AuthProvider
 import com.raf.core.domain.model.ApiResult
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
@@ -25,6 +25,7 @@ class AuthRepositoryImpl @Inject constructor(
     }
 
     override suspend fun login(
+        id: Int,
         username: String,
         password: String,
     ): ApiResult<String> {
@@ -39,7 +40,7 @@ class AuthRepositoryImpl @Inject constructor(
 
                 val encryptedToken =
                     EncryptionManager.encrypt(token) ?: return ApiResult.Error(result.message())
-                authDataStore.saveSessionToken(encryptedToken)
+                authDataStore.saveSession(encryptedToken, id.toString())
                 ApiResult.Success(token)
             } else {
                 val errorMessage = result.errorBody()?.string()?.takeIf { it.isNotEmpty() }
@@ -90,9 +91,20 @@ class AuthRepositoryImpl @Inject constructor(
         }
     }
 
+    override suspend fun getUserId(): Int? {
+        return try {
+            authDataStore.getUserId().map { idString ->
+                idString?.toIntOrNull()
+            }.first()
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to get user id", e)
+            null
+        }
+    }
+
     override suspend fun logout() {
         try {
-            authDataStore.clearSessionToken()
+            authDataStore.clearSession()
         } catch (e: Exception) {
             Log.e(TAG, "Failed to logout", e)
         }

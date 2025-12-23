@@ -3,8 +3,8 @@ package com.raf.marketplace.presentation.list.viewmodel
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.raf.core.domain.contract.AuthProvider
 import com.raf.core.domain.model.ApiResult
+import com.raf.core.domain.usecase.GetAuthTokenUseCase
 import com.raf.marketplace.domain.model.ProductFilter
 import com.raf.marketplace.domain.model.ProductSortType
 import com.raf.marketplace.domain.usecase.cart.GetItemCountFromCartUseCase
@@ -25,7 +25,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class HomeViewModel @Inject constructor(
-    private val authProvider: AuthProvider,
+    private val getAuthTokenUseCase: GetAuthTokenUseCase,
     private val fetchProductsUseCase: FetchProductsUseCase,
     private val getProductsUseCase: GetProductsUseCase,
     private val getProductCategoriesUseCase: GetProductCategoriesUseCase,
@@ -58,7 +58,7 @@ class HomeViewModel @Inject constructor(
     private fun fetchProducts() {
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true) }
-            val token = authProvider.getAuthToken().first() ?: ""
+            val token = getAuthTokenUseCase().first() ?: ""
             when (val result = fetchProductsUseCase(token)) {
                 is ApiResult.Success -> {
                     _uiState.update { it.copy(isLoading = false) }

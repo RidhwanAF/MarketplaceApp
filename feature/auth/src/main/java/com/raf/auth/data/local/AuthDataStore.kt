@@ -15,10 +15,12 @@ class AuthDataStore @Inject constructor(
     private val Context.dataStore by preferencesDataStore("auth_data_preferences")
 
     private val sessionTokenKey = stringPreferencesKey("session_token_key")
+    private val userIdKey = stringPreferencesKey("user_id_key")
 
-    suspend fun saveSessionToken(token: String) {
+    suspend fun saveSession(token: String, userId: String) {
         context.dataStore.edit { preferences ->
             preferences[sessionTokenKey] = token
+            preferences[userIdKey] = userId
         }
     }
 
@@ -28,9 +30,16 @@ class AuthDataStore @Inject constructor(
         }
     }
 
-    suspend fun clearSessionToken() {
+    fun getUserId(): Flow<String?> {
+        return context.dataStore.data.map { preferences ->
+            preferences[userIdKey]
+        }
+    }
+
+    suspend fun clearSession() {
         context.dataStore.edit { preferences ->
             preferences.remove(sessionTokenKey)
+            preferences.remove(userIdKey)
         }
     }
 }

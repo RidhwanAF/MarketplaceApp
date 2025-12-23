@@ -8,21 +8,23 @@ data class AuthState(
 )
 
 data class AuthUserLogin(
+    val id: Int,
     val username: String,
     val password: String,
 ) {
+    // https://fakestoreapi.com/users
     companion object {
         val listAuthUserLogin = listOf(
-            AuthUserLogin("johnd", "m38rmF$"),
-            AuthUserLogin("david", "morrison"),
-            AuthUserLogin("kevinryan", "kev02937@"),
-            AuthUserLogin("donero", "ewedon"),
-            AuthUserLogin("derek", "jklg*_56"),
-            AuthUserLogin("david_r", "3478*#54"),
-            AuthUserLogin("snyder", "f238&@*$"),
-            AuthUserLogin("hopkins", $$"William56$hj"),
-            AuthUserLogin("kate_h", "kfejk@*_"),
-            AuthUserLogin("jimmie_k", "klein*#%*"),
+            AuthUserLogin(1, "johnd", "m38rmF$"),
+            AuthUserLogin(2, "david", "morrison"),
+            AuthUserLogin(3, "kevinryan", "kev02937@"),
+            AuthUserLogin(4, "donero", "ewedon"),
+            AuthUserLogin(5, "derek", "jklg*_56"),
+            AuthUserLogin(6, "david_r", "3478*#54"),
+            AuthUserLogin(7, "snyder", "f238&@*$"),
+            AuthUserLogin(8, "hopkins", $$"William56$hj"),
+            AuthUserLogin(9, "kate_h", "kfejk@*_"),
+            AuthUserLogin(10, "jimmie_k", "klein*#%*"),
         )
     }
 }

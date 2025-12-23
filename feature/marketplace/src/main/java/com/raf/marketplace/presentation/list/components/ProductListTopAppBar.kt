@@ -20,7 +20,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material3.Badge
 import androidx.compose.material3.BadgedBox
@@ -67,14 +66,13 @@ import kotlinx.coroutines.delay
 @Composable
 fun SharedTransitionScope.ProductListTopAppBar(
     modifier: Modifier = Modifier,
-    showChartMenu: Boolean = false,
+    animatedVisibilityScope: AnimatedVisibilityScope,
     scrollBehavior: TopAppBarScrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior(),
     searchQuery: String,
     onSearchQueryChange: (String) -> Unit,
-    isSettingsButtonVisible: Boolean = true,
-    onNavigateToSettings: () -> Unit = {},
     cartItemCount: Int = 0,
     onNavigateToCart: () -> Unit = {},
+    onProfileClick: () -> Unit = {},
 ) {
     TopAppBar(
         title = {
@@ -85,54 +83,48 @@ fun SharedTransitionScope.ProductListTopAppBar(
             )
         },
         actions = {
-            AnimatedVisibility(
-                visible = showChartMenu,
-                enter = scaleIn(animationSpec = MaterialTheme.motionScheme.fastSpatialSpec()),
-                exit = scaleOut(animationSpec = MaterialTheme.motionScheme.fastSpatialSpec())
+            TooltipBox(
+                positionProvider =
+                    TooltipDefaults.rememberTooltipPositionProvider(
+                        TooltipAnchorPosition.Below
+                    ),
+                tooltip = {
+                    PlainTooltip {
+                        Text(text = stringResource(R.string.carts))
+                    }
+                },
+                state = rememberTooltipState(),
+                modifier = Modifier
+                    .sharedBounds(
+                        sharedContentState = rememberSharedContentState("cart-container"),
+                        animatedVisibilityScope = animatedVisibilityScope
+                    )
             ) {
-                TooltipBox(
-                    positionProvider =
-                        TooltipDefaults.rememberTooltipPositionProvider(
-                            TooltipAnchorPosition.Below
-                        ),
-                    tooltip = {
-                        PlainTooltip {
-                            Text(text = stringResource(R.string.carts))
-                        }
-                    },
-                    state = rememberTooltipState(),
-                    modifier = Modifier
-                        .sharedBounds(
-                            sharedContentState = rememberSharedContentState("cart-container"),
-                            animatedVisibilityScope = this
-                        )
-                ) {
-                    BadgedBox(
-                        badge = {
-                            this@TopAppBar.AnimatedVisibility(
-                                visible = cartItemCount > 0,
-                                enter = scaleIn(animationSpec = MaterialTheme.motionScheme.fastSpatialSpec()),
-                                exit = scaleOut(animationSpec = MaterialTheme.motionScheme.fastSpatialSpec())
-                            ) {
-                                Badge {
-                                    Text(
-                                        text = cartItemCount.toString(),
-                                        maxLines = 1,
-                                        overflow = TextOverflow.Ellipsis
-                                    )
-                                }
+                BadgedBox(
+                    badge = {
+                        this@TopAppBar.AnimatedVisibility(
+                            visible = cartItemCount > 0,
+                            enter = scaleIn(animationSpec = MaterialTheme.motionScheme.fastSpatialSpec()),
+                            exit = scaleOut(animationSpec = MaterialTheme.motionScheme.fastSpatialSpec())
+                        ) {
+                            Badge {
+                                Text(
+                                    text = cartItemCount.toString(),
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis
+                                )
                             }
                         }
+                    }
+                ) {
+                    IconButton(
+                        shapes = customIconButtonShapes(),
+                        onClick = onNavigateToCart
                     ) {
-                        IconButton(
-                            shapes = customIconButtonShapes(),
-                            onClick = onNavigateToCart
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.ShoppingCart,
-                                contentDescription = stringResource(R.string.carts)
-                            )
-                        }
+                        Icon(
+                            imageVector = Icons.Default.ShoppingCart,
+                            contentDescription = stringResource(R.string.carts)
+                        )
                     }
                 }
             }
@@ -150,47 +142,12 @@ fun SharedTransitionScope.ProductListTopAppBar(
             ) {
                 IconButton(
                     shapes = customIconButtonShapes(),
-                    onClick = {
-                        // TODO: Profile Show
-                    }
+                    onClick = onProfileClick
                 ) {
                     Icon(
                         imageVector = Icons.Default.AccountCircle,
                         contentDescription = stringResource(R.string.profile)
                     )
-                }
-            }
-            AnimatedContent(
-                targetState = isSettingsButtonVisible,
-            ) { targetState ->
-                if (targetState) {
-                    TooltipBox(
-                        positionProvider =
-                            TooltipDefaults.rememberTooltipPositionProvider(
-                                TooltipAnchorPosition.Below
-                            ),
-                        tooltip = {
-                            PlainTooltip {
-                                Text(text = stringResource(R.string.settings))
-                            }
-                        },
-                        state = rememberTooltipState(),
-                        modifier = Modifier
-                            .sharedBounds(
-                                sharedContentState = rememberSharedContentState("transition_settings_screen_container_key"),
-                                animatedVisibilityScope = this
-                            )
-                    ) {
-                        IconButton(
-                            shapes = customIconButtonShapes(),
-                            onClick = onNavigateToSettings
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.Settings,
-                                contentDescription = stringResource(R.string.settings)
-                            )
-                        }
-                    }
                 }
             }
         },

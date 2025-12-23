@@ -2,19 +2,26 @@ package com.raf.marketplaceapp.navigation
 
 import androidx.compose.animation.SharedTransitionLayout
 import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.adaptive.ExperimentalMaterial3AdaptiveApi
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.material3.adaptive.navigation3.ListDetailSceneStrategy
 import androidx.compose.material3.adaptive.navigation3.rememberListDetailSceneStrategy
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.IntOffset
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
@@ -32,9 +39,13 @@ import com.raf.marketplace.presentation.cart.CartScreen
 import com.raf.marketplace.presentation.detail.DetailScreen
 import com.raf.marketplace.presentation.detail.viewmodel.DetailViewModel
 import com.raf.marketplace.presentation.list.HomeScreen
+import com.raf.profile.presentation.ProfileContent
 import com.raf.settings.presentation.SettingsScreen
 
-@OptIn(ExperimentalMaterial3AdaptiveApi::class, ExperimentalMaterial3ExpressiveApi::class)
+@OptIn(
+    ExperimentalMaterial3AdaptiveApi::class, ExperimentalMaterial3ExpressiveApi::class,
+    ExperimentalMaterial3Api::class
+)
 @Composable
 fun AppNavGraph(
     modifier: Modifier = Modifier,
@@ -68,12 +79,15 @@ fun AppNavGraph(
                             animationSpec = animationSpecFloat,
                             initialScale = 0.75f
                         ) togetherWith
-                        scaleOut(animationSpec = animationSpecFloat, targetScale = 1.05f)
+                        scaleOut(
+                            animationSpec = animationSpecFloat,
+                            targetScale = 1.05f
+                        ) + fadeOut()
             },
             popTransitionSpec = {
                 scaleIn(initialScale = 1.05f) togetherWith
                         scaleOut(targetScale = 0.5f, animationSpec = animationSpecFloat) +
-                        slideOutHorizontally(animationSpec = animationSpecIntOffset) { it }
+                        slideOutHorizontally(animationSpec = animationSpecIntOffset) { it } + fadeOut()
             },
             predictivePopTransitionSpec = { swipeNavigation ->
                 val isSwipeFromRight = swipeNavigation == NavigationEvent.EDGE_RIGHT
@@ -114,20 +128,16 @@ fun AppNavGraph(
                 entry<Route.Home>(
                     metadata = ListDetailSceneStrategy.listPane(sceneKey = "products")
                 ) {
-                    val isCartScreenVisible = backStack.contains(Route.Cart)
-                    val isSettingsScreenVisible = backStack.contains(Route.Settings)
                     val detailEntry = backStack.findLast { it is Route.Detail } as? Route.Detail
-                    val isDetailScreenVisible = detailEntry != null
                     val selectedProductId = detailEntry?.id
+
+                    var showProfileDialog by rememberSaveable {
+                        mutableStateOf(false)
+                    }
 
                     HomeScreen(
                         animatedVisibilityScope = LocalNavAnimatedContentScope.current,
                         selectedProductId = selectedProductId,
-                        isSettingsScreenVisible = isSettingsScreenVisible,
-                        showChartMenu = !isDetailScreenVisible && !isCartScreenVisible,
-                        onNavigateToSettings = {
-                            backStack.add(Route.Settings)
-                        },
                         onNavigateToDetail = { id ->
                             backStack.removeIf { entry ->
                                 entry is Route.Detail && entry.id != id
@@ -137,7 +147,25 @@ fun AppNavGraph(
                         onNavigateToCart = {
                             backStack.add(Route.Cart)
                         },
+                        onProfileClicked = { showProfileDialog = true }
                     )
+                    if (showProfileDialog) {
+                        ModalBottomSheet(
+                            onDismissRequest = { showProfileDialog = false }
+                        ) {
+                            ProfileContent(
+                                onNavigateToSettings = {
+                                    showProfileDialog = false
+                                    backStack.add(Route.Settings)
+                                },
+                                onLoggedOut = {
+                                    showProfileDialog = false
+                                    backStack.clear()
+                                    backStack.add(Route.Auth)
+                                }
+                            )
+                        }
+                    }
                 }
 
                 entry<Route.Detail>(
@@ -146,7 +174,6 @@ fun AppNavGraph(
                     val adaptiveInfo = currentWindowAdaptiveInfo()
                     val isExpandedScreen =
                         adaptiveInfo.windowSizeClass.isWidthAtLeastBreakpoint(WindowSizeClass.WIDTH_DP_EXPANDED_LOWER_BOUND)
-                    val isCartScreenVisible = backStack.contains(Route.Cart)
 
                     val viewModel = hiltViewModel<DetailViewModel, DetailViewModel.Factory>(
                         creationCallback = { factory ->
@@ -156,7 +183,6 @@ fun AppNavGraph(
 
                     DetailScreen(
                         animatedVisibilityScope = LocalNavAnimatedContentScope.current,
-                        isCartScreenVisible = isCartScreenVisible,
                         viewModel = viewModel,
                         isExpandedScreen = isExpandedScreen,
                         onNavigateToCart = {

@@ -201,6 +201,7 @@ fun CartItem(
                     Text(
                         text = productInCart.product.title,
                         fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.primary,
                         maxLines = 2,
                         overflow = TextOverflow.Ellipsis,
                         style = MaterialTheme.typography.titleMedium

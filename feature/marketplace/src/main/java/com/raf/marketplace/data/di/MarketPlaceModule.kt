@@ -7,8 +7,7 @@ import com.raf.marketplace.data.remote.MarketplaceApiService
 import com.raf.marketplace.data.repository.MarketplaceRepositoryImpl
 import com.raf.marketplace.domain.repository.MarketplaceRepository
 import com.raf.marketplace.domain.usecase.cart.AddToCartUseCase
-import com.raf.marketplace.domain.usecase.cart.DeleteAllItemFromCartUseCase
-import com.raf.marketplace.domain.usecase.cart.DeleteItemCartByProductIdUseCase
+import com.raf.marketplace.domain.usecase.cart.DeleteItemCartUseCase
 import com.raf.marketplace.domain.usecase.cart.GetAllItemFromCartUseCase
 import com.raf.marketplace.domain.usecase.cart.GetItemCountFromCartUseCase
 import com.raf.marketplace.domain.usecase.cart.UpdateQuantityByProductIdUseCase
@@ -88,14 +87,8 @@ object MarketPlaceModule {
 
     @Provides
     @Singleton
-    fun provideDeleteAllItemFromCartUseCase(marketplaceRepository: MarketplaceRepository): DeleteAllItemFromCartUseCase {
-        return DeleteAllItemFromCartUseCase(marketplaceRepository)
-    }
-
-    @Provides
-    @Singleton
-    fun provideDeleteItemCartByProductIdUseCase(marketplaceRepository: MarketplaceRepository): DeleteItemCartByProductIdUseCase {
-        return DeleteItemCartByProductIdUseCase(marketplaceRepository)
+    fun provideDeleteItemCartUseCase(marketplaceRepository: MarketplaceRepository): DeleteItemCartUseCase {
+        return DeleteItemCartUseCase(marketplaceRepository)
     }
 
     @Provides

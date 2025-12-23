@@ -3,8 +3,8 @@ package com.raf.marketplace.presentation.detail.viewmodel
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.raf.core.domain.contract.AuthProvider
 import com.raf.core.domain.model.ApiResult
+import com.raf.core.domain.usecase.GetAuthTokenUseCase
 import com.raf.marketplace.domain.model.Cart
 import com.raf.marketplace.domain.usecase.cart.AddToCartUseCase
 import com.raf.marketplace.domain.usecase.cart.GetItemCountFromCartUseCase
@@ -24,7 +24,7 @@ import kotlinx.coroutines.launch
 @HiltViewModel(assistedFactory = DetailViewModel.Factory::class)
 class DetailViewModel @AssistedInject constructor(
     @Assisted val productId: Int,
-    private val authProvider: AuthProvider,
+    private val getAuthTokenUseCase: GetAuthTokenUseCase,
     private val fetchProductByIdUseCase: FetchProductByIdUseCase,
     private val getItemCountFromCartUseCase: GetItemCountFromCartUseCase,
     private val addToCartUseCase: AddToCartUseCase,
@@ -47,7 +47,7 @@ class DetailViewModel @AssistedInject constructor(
         viewModelScope.launch {
             Log.d(TAG, "getProductDetailById: $productId")
             _uiState.update { it.copy(isLoading = true) }
-            val token = authProvider.getAuthToken().first() ?: ""
+            val token = getAuthTokenUseCase().first() ?: ""
 
             when (val result = fetchProductByIdUseCase(token = token, productId = productId)) {
                 is ApiResult.Loading -> {

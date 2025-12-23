@@ -56,6 +56,7 @@ dependencies {
     implementation(project(":core"))
     implementation(project(":feature:settings"))
     implementation(project(":feature:auth"))
+    implementation(project(":feature:profile"))
     implementation(project(":feature:marketplace"))
 
     implementation(libs.androidx.core.ktx)

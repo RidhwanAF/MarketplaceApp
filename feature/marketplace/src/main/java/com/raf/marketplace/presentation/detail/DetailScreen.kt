@@ -9,6 +9,8 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -93,7 +95,6 @@ import com.raf.marketplace.presentation.utilities.CurrencyHelper.covertToIDR
 fun SharedTransitionScope.DetailScreen(
     modifier: Modifier = Modifier,
     animatedVisibilityScope: AnimatedVisibilityScope,
-    isCartScreenVisible: Boolean,
     viewModel: DetailViewModel,
     isExpandedScreen: Boolean,
     onNavigateToCart: () -> Unit,
@@ -165,55 +166,49 @@ fun SharedTransitionScope.DetailScreen(
                         }
                     },
                     actions = {
-                        AnimatedVisibility(
-                            visible = !isCartScreenVisible,
-                            enter = scaleIn(animationSpec = MaterialTheme.motionScheme.fastSpatialSpec()),
-                            exit = scaleOut(animationSpec = MaterialTheme.motionScheme.fastSpatialSpec())
+                        TooltipBox(
+                            positionProvider =
+                                TooltipDefaults.rememberTooltipPositionProvider(
+                                    TooltipAnchorPosition.Below
+                                ),
+                            tooltip = {
+                                PlainTooltip {
+                                    Text(text = stringResource(R.string.carts))
+                                }
+                            },
+                            state = rememberTooltipState(),
+                            modifier = Modifier
+                                .sharedBounds(
+                                    sharedContentState = rememberSharedContentState("cart-container"),
+                                    animatedVisibilityScope = animatedVisibilityScope
+                                )
+                                .padding(end = 8.dp)
                         ) {
-                            TooltipBox(
-                                positionProvider =
-                                    TooltipDefaults.rememberTooltipPositionProvider(
-                                        TooltipAnchorPosition.Below
-                                    ),
-                                tooltip = {
-                                    PlainTooltip {
-                                        Text(text = stringResource(R.string.carts))
-                                    }
-                                },
-                                state = rememberTooltipState(),
-                                modifier = Modifier
-                                    .sharedBounds(
-                                        sharedContentState = rememberSharedContentState("cart-container"),
-                                        animatedVisibilityScope = this
-                                    )
-                                    .padding(end = 8.dp)
-                            ) {
-                                BadgedBox(
-                                    badge = {
-                                        this@TopAppBar.AnimatedVisibility(
-                                            visible = uiState.cartItemCount > 0,
-                                            enter = scaleIn(animationSpec = MaterialTheme.motionScheme.fastSpatialSpec()),
-                                            exit = scaleOut(animationSpec = MaterialTheme.motionScheme.fastSpatialSpec())
-                                        ) {
-                                            Badge {
-                                                Text(
-                                                    text = uiState.cartItemCount.toString(),
-                                                    maxLines = 1,
-                                                    overflow = TextOverflow.Ellipsis
-                                                )
-                                            }
+                            BadgedBox(
+                                badge = {
+                                    this@TopAppBar.AnimatedVisibility(
+                                        visible = uiState.cartItemCount > 0,
+                                        enter = scaleIn(animationSpec = MaterialTheme.motionScheme.fastSpatialSpec()),
+                                        exit = scaleOut(animationSpec = MaterialTheme.motionScheme.fastSpatialSpec())
+                                    ) {
+                                        Badge {
+                                            Text(
+                                                text = uiState.cartItemCount.toString(),
+                                                maxLines = 1,
+                                                overflow = TextOverflow.Ellipsis
+                                            )
                                         }
                                     }
+                                }
+                            ) {
+                                IconButton(
+                                    shapes = customIconButtonShapes(),
+                                    onClick = onNavigateToCart
                                 ) {
-                                    IconButton(
-                                        shapes = customIconButtonShapes(),
-                                        onClick = onNavigateToCart
-                                    ) {
-                                        Icon(
-                                            imageVector = Icons.Default.ShoppingCart,
-                                            contentDescription = stringResource(R.string.carts)
-                                        )
-                                    }
+                                    Icon(
+                                        imageVector = Icons.Default.ShoppingCart,
+                                        contentDescription = stringResource(R.string.carts)
+                                    )
                                 }
                             }
                         }
@@ -222,15 +217,22 @@ fun SharedTransitionScope.DetailScreen(
                 )
             },
             bottomBar = {
-                ProductPriceTotalBottomBar(
-                    totalPriceInDollar = (uiState.product?.priceInDollar ?: 0.0) * uiState.quantity,
-                    enabled = uiState.quantity > 0 && uiState.product != null && !uiState.isLoading,
-                    quantity = if (uiState.product != null && !uiState.isLoading) uiState.quantity else 0,
-                    onButtonClicked = {
-                        viewModel.addToCart()
-                        viewModel.showUiMessage(addToChartMessage)
-                    }
-                )
+                AnimatedVisibility(
+                    visible = !uiState.isLoading,
+                    enter = scaleIn(animationSpec = MaterialTheme.motionScheme.fastSpatialSpec()) + slideInVertically { it },
+                    exit = slideOutVertically { it } + scaleOut(animationSpec = MaterialTheme.motionScheme.fastSpatialSpec())
+                ) {
+                    ProductPriceTotalBottomBar(
+                        totalPriceInDollar = (uiState.product?.priceInDollar
+                            ?: 0.0) * uiState.quantity,
+                        enabled = uiState.quantity > 0 && uiState.product != null && !uiState.isLoading,
+                        quantity = if (uiState.product != null && !uiState.isLoading) uiState.quantity else 0,
+                        onButtonClicked = {
+                            viewModel.addToCart()
+                            viewModel.showUiMessage(addToChartMessage)
+                        }
+                    )
+                }
             },
             snackbarHost = {
                 SnackbarHost(snackbarHostState)

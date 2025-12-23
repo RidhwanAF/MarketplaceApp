@@ -1,19 +1,27 @@
 package com.raf.marketplaceapp.di
 
+import android.content.Context
 import com.raf.auth.data.local.AuthDataStore
 import com.raf.auth.data.remote.AuthApiService
 import com.raf.auth.data.repository.AuthRepositoryImpl
 import com.raf.core.domain.contract.AppSettingsProvider
 import com.raf.core.domain.contract.AuthProvider
+import com.raf.core.domain.contract.CartProvider
+import com.raf.core.domain.usecase.DeleteAllItemCartUseCase
 import com.raf.core.domain.usecase.GetAppSettingsUseCase
 import com.raf.core.domain.usecase.GetAuthTokenUseCase
+import com.raf.core.domain.usecase.GetUserIdUseCase
 import com.raf.core.domain.usecase.LogoutUseCase
+import com.raf.marketplace.data.local.room.MarketplaceDatabase
+import com.raf.marketplace.data.remote.MarketplaceApiService
+import com.raf.marketplace.data.repository.MarketplaceRepositoryImpl
 import com.raf.marketplaceapp.BuildConfig
 import com.raf.settings.data.local.AppSettingsDataStore
 import com.raf.settings.data.repository.AppSettingsRepositoryImpl
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
+import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
@@ -67,6 +75,16 @@ object AppModule {
         return AuthRepositoryImpl(authApiService, authDataStore)
     }
 
+    @Provides
+    @Singleton
+    fun provideCartProvider(
+        @ApplicationContext context: Context,
+        apiService: MarketplaceApiService,
+        marketplaceDb: MarketplaceDatabase,
+    ): CartProvider {
+        return MarketplaceRepositoryImpl(context, apiService, marketplaceDb)
+    }
+
     /**
      * Use Cases
      */
@@ -80,6 +98,18 @@ object AppModule {
     @Singleton
     fun provideGetAuthTokenUseCase(authProvider: AuthProvider): GetAuthTokenUseCase {
         return GetAuthTokenUseCase(authProvider)
+    }
+
+    @Provides
+    @Singleton
+    fun provideGetUserIdUseCase(authProvider: AuthProvider): GetUserIdUseCase {
+        return GetUserIdUseCase(authProvider)
+    }
+
+    @Provides
+    @Singleton
+    fun provideDeleteAllItemCartUseCase(cartProvider: CartProvider): DeleteAllItemCartUseCase {
+        return DeleteAllItemCartUseCase(cartProvider)
     }
 
     @Provides

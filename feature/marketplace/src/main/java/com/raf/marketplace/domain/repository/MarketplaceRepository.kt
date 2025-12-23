@@ -19,5 +19,4 @@ interface MarketplaceRepository {
     fun getItemCountFromCart(): Flow<Int>
     suspend fun updateQuantityByProductId(productId: Int, newQuantity: Int)
     suspend fun deleteItemCartByProductId(productId: Int): Result<Unit>
-    suspend fun deleteAllItemFromCart(): Result<Unit>
 }

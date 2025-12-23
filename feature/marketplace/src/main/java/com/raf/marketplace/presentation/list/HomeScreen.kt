@@ -49,11 +49,9 @@ fun SharedTransitionScope.HomeScreen(
     animatedVisibilityScope: AnimatedVisibilityScope,
     viewModel: HomeViewModel = hiltViewModel(),
     selectedProductId: Int? = null,
-    isSettingsScreenVisible: Boolean = false,
-    showChartMenu: Boolean = true,
-    onNavigateToSettings: () -> Unit = {},
     onNavigateToDetail: (Int) -> Unit = {},
     onNavigateToCart: () -> Unit = {},
+    onProfileClicked: () -> Unit = {},
 ) {
     val localLayoutDirection = LocalLayoutDirection.current
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
@@ -78,13 +76,12 @@ fun SharedTransitionScope.HomeScreen(
             topBar = {
                 ProductListTopAppBar(
                     scrollBehavior = scrollBehavior,
-                    showChartMenu = showChartMenu,
+                    animatedVisibilityScope = animatedVisibilityScope,
                     searchQuery = productFilterState.query,
                     onSearchQueryChange = viewModel::onSearchQueryChange,
-                    isSettingsButtonVisible = !isSettingsScreenVisible,
-                    onNavigateToSettings = onNavigateToSettings,
                     cartItemCount = uiState.cartItemCount,
-                    onNavigateToCart = onNavigateToCart
+                    onNavigateToCart = onNavigateToCart,
+                    onProfileClick = onProfileClicked
                 )
             },
             floatingActionButton = {

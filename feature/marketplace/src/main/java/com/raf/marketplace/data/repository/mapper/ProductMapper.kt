@@ -8,17 +8,17 @@ import com.raf.marketplace.domain.model.Product
 import com.raf.marketplace.domain.model.Rating
 
 object ProductMapper {
-    fun ProductResponse.toDatabase() = ProductEntity(
+    fun ProductResponse.toEntity() = ProductEntity(
         id = id,
         title = title,
         price = price,
         description = description,
         category = category,
         image = image,
-        rating = rating.toDatabase()
+        rating = rating.toEntity()
     )
 
-    private fun RatingResponse.toDatabase() = RatingEntity(
+    private fun RatingResponse.toEntity() = RatingEntity(
         rate = rate,
         count = count
     )

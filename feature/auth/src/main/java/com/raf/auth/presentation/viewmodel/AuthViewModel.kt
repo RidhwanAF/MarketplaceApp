@@ -29,6 +29,8 @@ class AuthViewModel @Inject constructor(
     private val _uiState = MutableStateFlow(AuthState())
     val uiState: StateFlow<AuthState> = _uiState.asStateFlow()
 
+    private var userLogin by mutableStateOf(AuthUserLogin.listAuthUserLogin.random())
+
     var username by mutableStateOf("")
         private set
 
@@ -102,7 +104,7 @@ class AuthViewModel @Inject constructor(
     fun login() {
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true) }
-            when (val result = loginUseCase(username, password)) {
+            when (val result = loginUseCase(userLogin.id, username, password)) {
                 is ApiResult.Loading -> {
                     _uiState.update { it.copy(isLoading = true) }
                 }
@@ -162,7 +164,7 @@ class AuthViewModel @Inject constructor(
     }
 
     fun randomUserLogin() {
-        val userLogin = AuthUserLogin.listAuthUserLogin.random()
+        userLogin = AuthUserLogin.listAuthUserLogin.random()
         username = userLogin.username
         password = userLogin.password
     }

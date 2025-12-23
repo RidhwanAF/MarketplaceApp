@@ -2,15 +2,13 @@ package com.raf.marketplace.presentation.cart.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.raf.marketplace.domain.usecase.cart.DeleteItemCartByProductIdUseCase
+import com.raf.marketplace.domain.usecase.cart.DeleteItemCartUseCase
 import com.raf.marketplace.domain.usecase.cart.GetAllItemFromCartUseCase
 import com.raf.marketplace.domain.usecase.cart.UpdateQuantityByProductIdUseCase
 import com.raf.marketplace.domain.usecase.product.GetProductsUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.flatMapLatest
@@ -24,7 +22,7 @@ import javax.inject.Inject
 class CartViewModel @Inject constructor(
     private val getProductsUseCase: GetProductsUseCase,
     private val getAllItemFromCartUseCase: GetAllItemFromCartUseCase,
-    private val deleteItemCartByProductIdUseCase: DeleteItemCartByProductIdUseCase,
+    private val deleteItemCartUseCase: DeleteItemCartUseCase,
     private val updateItemCartByProductIdUseCase: UpdateQuantityByProductIdUseCase,
 ) : ViewModel() {
 
@@ -75,7 +73,7 @@ class CartViewModel @Inject constructor(
 
     fun deleteCartItem(productId: Int) {
         viewModelScope.launch {
-            deleteItemCartByProductIdUseCase(productId)
+            deleteItemCartUseCase(productId)
         }
     }
 
@@ -91,7 +89,7 @@ class CartViewModel @Inject constructor(
             }
 
             if (quantity == 0) {
-                deleteItemCartByProductIdUseCase(productId)
+                deleteItemCartUseCase(productId)
                 return@launch
             }
 
@@ -99,23 +97,23 @@ class CartViewModel @Inject constructor(
         }
     }
 
-    var job: Job? = null
-    fun showUiMessage(message: String) {
-        if (message.isEmpty()) return
-        _uiState.update {
-            it.copy(uiMessage = null)
-        }
-        job?.cancel()
-        job = viewModelScope.launch {
-            _uiState.update {
-                it.copy(uiMessage = message)
-            }
-            delay(1500)
-            _uiState.update {
-                it.copy(uiMessage = null)
-            }
-        }
-    }
+//    var job: Job? = null
+//    fun showUiMessage(message: String) {
+//        if (message.isEmpty()) return
+//        _uiState.update {
+//            it.copy(uiMessage = null)
+//        }
+//        job?.cancel()
+//        job = viewModelScope.launch {
+//            _uiState.update {
+//                it.copy(uiMessage = message)
+//            }
+//            delay(1500)
+//            _uiState.update {
+//                it.copy(uiMessage = null)
+//            }
+//        }
+//    }
 
     companion object {
         private const val TAG = "CartViewModel"

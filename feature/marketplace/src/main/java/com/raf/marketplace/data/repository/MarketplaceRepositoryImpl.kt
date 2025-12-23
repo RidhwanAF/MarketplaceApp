@@ -3,12 +3,13 @@ package com.raf.marketplace.data.repository
 import android.content.Context
 import android.util.Log
 import com.raf.core.data.utility.NetworkHelper.isNetworkAvailable
+import com.raf.core.domain.contract.CartProvider
 import com.raf.core.domain.model.ApiResult
 import com.raf.marketplace.data.local.room.MarketplaceDatabase
 import com.raf.marketplace.data.remote.MarketplaceApiService
 import com.raf.marketplace.data.repository.mapper.CartMapper.toDomain
 import com.raf.marketplace.data.repository.mapper.CartMapper.toEntity
-import com.raf.marketplace.data.repository.mapper.ProductMapper.toDatabase
+import com.raf.marketplace.data.repository.mapper.ProductMapper.toEntity
 import com.raf.marketplace.data.repository.mapper.ProductMapper.toDomain
 import com.raf.marketplace.data.utility.ProductQueryHelper
 import com.raf.marketplace.domain.model.Cart
@@ -25,7 +26,7 @@ class MarketplaceRepositoryImpl @Inject constructor(
     @param:ApplicationContext private val context: Context,
     private val apiService: MarketplaceApiService,
     database: MarketplaceDatabase,
-) : MarketplaceRepository {
+) : MarketplaceRepository, CartProvider {
 
     private val productDao = database.productDao
     private val cartDao = database.cartDao
@@ -36,7 +37,7 @@ class MarketplaceRepositoryImpl @Inject constructor(
             val result = apiService.getProducts("Bearer $token")
             if (result.isSuccessful) {
                 val products = result.body()?.map { productResponse ->
-                    productResponse.toDatabase()
+                    productResponse.toEntity()
                 } ?: emptyList()
                 productDao.insertProducts(products)
 
@@ -68,7 +69,7 @@ class MarketplaceRepositoryImpl @Inject constructor(
             val result = apiService.getProductById("Bearer $token", productId)
             if (result.isSuccessful) {
                 val product =
-                    result.body()?.toDatabase()
+                    result.body()?.toEntity()
                         ?: return getProductFromLocalByIdIfAvailable(productId, "Product not found")
 
                 productDao.updateProduct(product)
