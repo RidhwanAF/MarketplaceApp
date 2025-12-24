@@ -68,6 +68,7 @@ fun SharedTransitionScope.ProductListTopAppBar(
     modifier: Modifier = Modifier,
     animatedVisibilityScope: AnimatedVisibilityScope,
     scrollBehavior: TopAppBarScrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior(),
+    detailProductVisible: Boolean,
     searchQuery: String,
     onSearchQueryChange: (String) -> Unit,
     cartItemCount: Int = 0,
@@ -83,48 +84,54 @@ fun SharedTransitionScope.ProductListTopAppBar(
             )
         },
         actions = {
-            TooltipBox(
-                positionProvider =
-                    TooltipDefaults.rememberTooltipPositionProvider(
-                        TooltipAnchorPosition.Below
-                    ),
-                tooltip = {
-                    PlainTooltip {
-                        Text(text = stringResource(R.string.carts))
-                    }
-                },
-                state = rememberTooltipState(),
-                modifier = Modifier
-                    .sharedBounds(
-                        sharedContentState = rememberSharedContentState("cart-container"),
-                        animatedVisibilityScope = animatedVisibilityScope
-                    )
+            AnimatedVisibility(
+                visible = !detailProductVisible,
+                enter = scaleIn(animationSpec = MaterialTheme.motionScheme.fastSpatialSpec()),
+                exit = scaleOut(animationSpec = MaterialTheme.motionScheme.fastSpatialSpec())
             ) {
-                BadgedBox(
-                    badge = {
-                        this@TopAppBar.AnimatedVisibility(
-                            visible = cartItemCount > 0,
-                            enter = scaleIn(animationSpec = MaterialTheme.motionScheme.fastSpatialSpec()),
-                            exit = scaleOut(animationSpec = MaterialTheme.motionScheme.fastSpatialSpec())
-                        ) {
-                            Badge {
-                                Text(
-                                    text = cartItemCount.toString(),
-                                    maxLines = 1,
-                                    overflow = TextOverflow.Ellipsis
-                                )
+                TooltipBox(
+                    positionProvider =
+                        TooltipDefaults.rememberTooltipPositionProvider(
+                            TooltipAnchorPosition.Below
+                        ),
+                    tooltip = {
+                        PlainTooltip {
+                            Text(text = stringResource(R.string.carts))
+                        }
+                    },
+                    state = rememberTooltipState(),
+                    modifier = Modifier
+                        .sharedBounds(
+                            sharedContentState = rememberSharedContentState("cart-container"),
+                            animatedVisibilityScope = animatedVisibilityScope
+                        )
+                ) {
+                    BadgedBox(
+                        badge = {
+                            this@TopAppBar.AnimatedVisibility(
+                                visible = cartItemCount > 0,
+                                enter = scaleIn(animationSpec = MaterialTheme.motionScheme.fastSpatialSpec()),
+                                exit = scaleOut(animationSpec = MaterialTheme.motionScheme.fastSpatialSpec())
+                            ) {
+                                Badge {
+                                    Text(
+                                        text = cartItemCount.toString(),
+                                        maxLines = 1,
+                                        overflow = TextOverflow.Ellipsis
+                                    )
+                                }
                             }
                         }
-                    }
-                ) {
-                    IconButton(
-                        shapes = customIconButtonShapes(),
-                        onClick = onNavigateToCart
                     ) {
-                        Icon(
-                            imageVector = Icons.Default.ShoppingCart,
-                            contentDescription = stringResource(R.string.carts)
-                        )
+                        IconButton(
+                            shapes = customIconButtonShapes(),
+                            onClick = onNavigateToCart
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.ShoppingCart,
+                                contentDescription = stringResource(R.string.carts)
+                            )
+                        }
                     }
                 }
             }

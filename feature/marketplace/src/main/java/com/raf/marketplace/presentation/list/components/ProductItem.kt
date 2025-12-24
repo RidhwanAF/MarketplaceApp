@@ -2,6 +2,7 @@ package com.raf.marketplace.presentation.list.components
 
 import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.SharedTransitionScope
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.aspectRatio
@@ -20,6 +21,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -35,9 +37,11 @@ import com.raf.marketplace.presentation.utilities.CurrencyHelper.convertToIDR
 fun SharedTransitionScope.ProductItem(
     modifier: Modifier = Modifier,
     animatedVisibilityScope: AnimatedVisibilityScope,
+    popupAnimatedVisibilityScope: AnimatedVisibilityScope,
     product: Product,
     selectedId: Int?,
     onClicked: () -> Unit = {},
+    onLongClicked: () -> Unit = {},
 ) {
     Card(
         colors = if (product.id == selectedId) CardDefaults.cardColors(
@@ -45,8 +49,13 @@ fun SharedTransitionScope.ProductItem(
             contentColor = MaterialTheme.colorScheme.onSecondaryContainer
         )
         else CardDefaults.cardColors(),
-        onClick = onClicked,
+        shape = MaterialTheme.shapes.large,
         modifier = modifier
+            .clip(MaterialTheme.shapes.large)
+            .combinedClickable(
+                onClick = onClicked,
+                onLongClick = onLongClicked
+            )
             .padding(2.dp)
     ) {
         Column(
@@ -55,6 +64,10 @@ fun SharedTransitionScope.ProductItem(
                 .sharedBounds(
                     sharedContentState = rememberSharedContentState("product-container-${product.id}"),
                     animatedVisibilityScope = animatedVisibilityScope
+                )
+                .sharedBounds(
+                    sharedContentState = rememberSharedContentState("popup-product-container-${product.id}"),
+                    animatedVisibilityScope = popupAnimatedVisibilityScope
                 )
                 .fillMaxSize()
                 .padding(16.dp)
@@ -84,6 +97,10 @@ fun SharedTransitionScope.ProductItem(
                         sharedContentState = rememberSharedContentState("product-image-${product.id}"),
                         animatedVisibilityScope = animatedVisibilityScope
                     )
+                    .sharedElement(
+                        sharedContentState = rememberSharedContentState("popup-product-image-${product.id}"),
+                        animatedVisibilityScope = popupAnimatedVisibilityScope
+                    )
                     .fillMaxWidth()
             )
             Text(
@@ -97,6 +114,10 @@ fun SharedTransitionScope.ProductItem(
                         sharedContentState = rememberSharedContentState("product-title-${product.id}"),
                         animatedVisibilityScope = animatedVisibilityScope
                     )
+                    .sharedElement(
+                        sharedContentState = rememberSharedContentState("popup-product-title-${product.id}"),
+                        animatedVisibilityScope = popupAnimatedVisibilityScope
+                    )
                     .fillMaxWidth(),
             )
             RatingBar(
@@ -106,6 +127,10 @@ fun SharedTransitionScope.ProductItem(
                     .sharedElement(
                         sharedContentState = rememberSharedContentState("product-rating-${product.id}"),
                         animatedVisibilityScope = animatedVisibilityScope
+                    )
+                    .sharedElement(
+                        sharedContentState = rememberSharedContentState("popup-product-rating-${product.id}"),
+                        animatedVisibilityScope = popupAnimatedVisibilityScope
                     )
                     .fillMaxWidth(),
             )
@@ -118,6 +143,10 @@ fun SharedTransitionScope.ProductItem(
                     .sharedElement(
                         sharedContentState = rememberSharedContentState("product-price-${product.id}"),
                         animatedVisibilityScope = animatedVisibilityScope
+                    )
+                    .sharedElement(
+                        sharedContentState = rememberSharedContentState("popup-product-price-${product.id}"),
+                        animatedVisibilityScope = popupAnimatedVisibilityScope
                     )
                     .fillMaxWidth(),
             )

@@ -55,8 +55,8 @@ fun AppNavGraph(
     val strategy = rememberListDetailSceneStrategy<Any>()
 
     val localMotionScheme = MaterialTheme.LocalMotionScheme.current
-    val animationSpecFloat = localMotionScheme.slowSpatialSpec<Float>()
-    val animationSpecIntOffset = localMotionScheme.slowSpatialSpec<IntOffset>()
+    val animationSpecFloat = localMotionScheme.fastSpatialSpec<Float>()
+    val animationSpecIntOffset = localMotionScheme.fastSpatialSpec<IntOffset>()
 
     SharedTransitionLayout(
         modifier = Modifier.fillMaxSize(),

@@ -5,8 +5,10 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.raf.core.domain.model.ApiResult
 import com.raf.core.domain.usecase.GetAuthTokenUseCase
+import com.raf.marketplace.domain.model.Cart
 import com.raf.marketplace.domain.model.ProductFilter
 import com.raf.marketplace.domain.model.ProductSortType
+import com.raf.marketplace.domain.usecase.cart.AddToCartUseCase
 import com.raf.marketplace.domain.usecase.cart.GetItemCountFromCartUseCase
 import com.raf.marketplace.domain.usecase.product.FetchProductsUseCase
 import com.raf.marketplace.domain.usecase.product.GetProductCategoriesUseCase
@@ -30,6 +32,7 @@ class HomeViewModel @Inject constructor(
     private val getProductsUseCase: GetProductsUseCase,
     private val getProductCategoriesUseCase: GetProductCategoriesUseCase,
     private val getItemCountFromCartUseCase: GetItemCountFromCartUseCase,
+    private val addToCartUseCase: AddToCartUseCase,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(HomeUiState())
@@ -142,7 +145,33 @@ class HomeViewModel @Inject constructor(
         }
     }
 
-    private fun showUiMessage(message: String) {
+    fun setProductToPopup(productId: Int?) {
+        if (productId == null) {
+            _uiState.update {
+                it.copy(selectedProductToPopup = null)
+            }
+            return
+        }
+        viewModelScope.launch {
+            val product = _uiState.value.products.find { it.id == productId }
+            _uiState.update {
+                it.copy(selectedProductToPopup = product)
+            }
+        }
+    }
+
+    fun addToCart(productId: Int, onAddedToCart: () -> Unit) {
+        viewModelScope.launch {
+            val cart = Cart(
+                productId = productId,
+                quantity = 1,
+            )
+            addToCartUseCase(cart)
+            onAddedToCart()
+        }
+    }
+
+    fun showUiMessage(message: String) {
         if (message.isEmpty()) return
         viewModelScope.launch {
             _uiState.update {

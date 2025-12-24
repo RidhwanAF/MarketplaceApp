@@ -1,7 +1,10 @@
 package com.raf.marketplace.presentation.list
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.SharedTransitionScope
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -35,6 +38,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.raf.marketplace.R
+import com.raf.marketplace.presentation.list.components.PopupProductItemDialog
 import com.raf.marketplace.presentation.list.components.ProductCategory
 import com.raf.marketplace.presentation.list.components.ProductFilterToolbar
 import com.raf.marketplace.presentation.list.components.ProductItem
@@ -77,6 +81,7 @@ fun SharedTransitionScope.HomeScreen(
                 ProductListTopAppBar(
                     scrollBehavior = scrollBehavior,
                     animatedVisibilityScope = animatedVisibilityScope,
+                    detailProductVisible = selectedProductId != null,
                     searchQuery = productFilterState.query,
                     onSearchQueryChange = viewModel::onSearchQueryChange,
                     cartItemCount = uiState.cartItemCount,
@@ -92,9 +97,7 @@ fun SharedTransitionScope.HomeScreen(
                     onShortByChanged = viewModel::onProductSortByChange
                 )
             },
-            snackbarHost = {
-                SnackbarHost(snackbarHostState)
-            },
+            snackbarHost = { SnackbarHost(snackbarHostState) },
             modifier = modifier
                 .fillMaxSize()
                 .nestedScroll(scrollBehavior.nestedScrollConnection)
@@ -147,18 +150,50 @@ fun SharedTransitionScope.HomeScreen(
                         items = uiState.products,
                         key = { product -> product.id }
                     ) { product ->
-                        ProductItem(
-                            animatedVisibilityScope = animatedVisibilityScope,
-                            product = product,
-                            selectedId = selectedProductId,
-                            onClicked = {
-                                onNavigateToDetail(product.id)
-                            },
+                        AnimatedVisibility(
+                            visible = uiState.selectedProductToPopup?.id != product.id,
+                            enter = scaleIn(animationSpec = MaterialTheme.motionScheme.fastSpatialSpec()),
+                            exit = scaleOut(animationSpec = MaterialTheme.motionScheme.fastSpatialSpec()),
                             modifier = Modifier.animateItem()
-                        )
+                        ) {
+                            ProductItem(
+                                animatedVisibilityScope = animatedVisibilityScope,
+                                popupAnimatedVisibilityScope = this,
+                                product = product,
+                                selectedId = selectedProductId,
+                                onClicked = {
+                                    onNavigateToDetail(product.id)
+                                    viewModel.setProductToPopup(null)
+                                },
+                                onLongClicked = {
+                                    if (selectedProductId != null) {
+                                        onNavigateToDetail(product.id)
+                                        viewModel.setProductToPopup(null)
+                                    } else {
+                                        viewModel.setProductToPopup(product.id)
+                                    }
+                                }
+                            )
+                        }
                     }
                 }
             }
         }
+
+        // Dialogs
+        val addedToCartMessage = stringResource(R.string.added_to_cart)
+        PopupProductItemDialog(
+            animatedVisibilityScope = animatedVisibilityScope,
+            isDetailVisible = selectedProductId != null,
+            product = uiState.selectedProductToPopup,
+            onDismiss = { viewModel.setProductToPopup(null) },
+            onClicked = { onNavigateToDetail(it) },
+            onAddToCart = {
+                viewModel.addToCart(
+                    productId = it,
+                    onAddedToCart = { viewModel.showUiMessage(addedToCartMessage) }
+                )
+            }
+        )
     }
 }

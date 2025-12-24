@@ -7,5 +7,6 @@ data class HomeUiState(
     val categories: List<String> = emptyList(),
     val cartItemCount: Int = 0,
     val isLoading: Boolean = false,
-    val uiMessage: String? = null
+    val uiMessage: String? = null,
+    val selectedProductToPopup: Product? = null,
 )
