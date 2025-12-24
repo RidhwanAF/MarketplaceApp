@@ -15,15 +15,7 @@
 Unlike typical demos, this app focuses on **"Delight"**—utilizing fluid Shared Element Transitions, Haptic Feedback, and the experimental Material 3 Expressive motion system to create a premium user feel.
 
 ## Demo
-
-
-https://github.com/user-attachments/assets/a9387512-dacc-4975-8262-5b5f6b624a4c
-
-
-https://github.com/user-attachments/assets/e0ccff56-076b-4d6b-90eb-689fe4942532
-
-
-
+https://github.com/user-attachments/assets/3a25601d-1f73-403a-98c2-d0184a6d087f
 
 ## Tech Stack
 
